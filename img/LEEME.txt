@@ -1,0 +1,7 @@
+Imágenes del núcleo.
+
+portada.jpg  Fotografía de la portada pública. Mientras no exista, index.php
+             muestra solo el degradado y la página funciona igual.
+             Recomendado: 1920 x 1080 px, JPG, menos de 400 KB.
+
+Las imágenes de cada módulo van en modulos/<nombre>/img/, no aquí.

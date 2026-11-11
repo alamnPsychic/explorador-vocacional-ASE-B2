@@ -1,0 +1,35 @@
+# Configuración propia de cada equipo
+/config/config.php
+
+# Archivos subidos durante las pruebas
+/modulos/*/uploads/*
+!/modulos/*/uploads/.gitkeep
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Contexto y ajustes locales de Claude Code (no se comparten)
+/CLAUDE.md
+/claude.md
+.claude/settings.local.json
+
+# PHP escribe su bitácora como "error_log", sin extensión
+error_log
+
+# Respaldos y exportaciones generados al probar
+*.sql.bak
+*.sql.gz
+*.zip
+
+# Otros sistemas operativos y editores
+desktop.ini
+ehthumbs.db
+._*
+nbproject/
+*.code-workspace
+*.swp
+*~

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía visual · Explorador Vocacional UTBB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/ev-base.css">
+<style>
+/* Estilos propios de esta guía. No forman parte del sistema de diseño. */
+.guia-muestra {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+    padding: var(--e5);
+    margin-bottom: var(--e3);
+}
+.guia-codigo {
+    background: #10204A;
+    color: #D8E2F7;
+    border-radius: var(--radio-sm);
+    padding: var(--e4);
+    overflow-x: auto;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: var(--t-xs);
+    line-height: 1.6;
+    margin-bottom: var(--e6);
+    white-space: pre;
+}
+.guia-codigo code { background: none; color: inherit; padding: 0; font-size: inherit; }
+.guia-fichas { display: grid; gap: var(--e3); grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.guia-ficha { border: 1px solid var(--borde); border-radius: var(--radio-sm); overflow: hidden; background: var(--blanco); }
+.guia-ficha__color { height: 64px; }
+.guia-ficha__datos { padding: var(--e2) var(--e3); font-size: var(--t-xs); }
+.guia-ficha__datos b { display: block; font-size: var(--t-sm); }
+.guia-ficha__datos span { color: var(--texto-suave); font-family: ui-monospace, Consolas, monospace; }
+.guia-indice { position: sticky; top: 80px; align-self: start; }
+.guia-indice a { display: block; padding: var(--e1) 0; font-size: var(--t-sm); text-decoration: none; }
+.guia-nota { border-left: 3px solid var(--acento); background: var(--acento-suave); padding: var(--e4); border-radius: var(--radio-sm); margin-bottom: var(--e5); }
+.guia-nota p { margin: 0; max-width: none; }
+.guia-escala > div { border-bottom: 1px solid var(--borde); padding-block: var(--e2); }
+</style>
+</head>
+<body>
+
+<a class="salto-contenido" href="#contenido">Saltar al contenido</a>
+
+<header class="encabezado">
+  <div class="contenedor encabezado__barra">
+    <a class="marca" href="#"><span class="marca__distintivo">EV</span> Explorador Vocacional</a>
+    <nav aria-label="Principal">
+      <ul class="menu">
+        <li><a href="#fundamentos" aria-current="page">Fundamentos</a></li>
+        <li><a href="#componentes">Componentes</a></li>
+        <li><a href="#reglas">Reglas</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="portada">
+  <div class="contenedor">
+    <h1>Guía visual del sistema de diseño</h1>
+    <p class="entradilla">Explorador Vocacional UTBB · Hoja <code>ev-base.css</code> · Versión 1.1</p>
+    <p>Esta página muestra todos los componentes disponibles junto con el marcado que los produce. Copia el marcado tal cual: si un componente existe aquí, no se vuelve a escribir en el módulo.</p>
+  </div>
+</section>
+
+<main id="contenido" class="contenedor seccion">
+
+<div class="disposicion-filtros">
+
+<nav class="guia-indice" aria-label="Índice de la guía">
+  <h3>Índice</h3>
+  <a href="#fundamentos">1. Color</a>
+  <a href="#areas">2. Áreas de conocimiento</a>
+  <a href="#tipografia">3. Tipografía</a>
+  <a href="#espaciado">4. Espaciado y radios</a>
+  <a href="#componentes">5. Botones</a>
+  <a href="#formularios">6. Formularios</a>
+  <a href="#tarjetas">7. Tarjetas y rejilla</a>
+  <a href="#insignias">8. Insignias de estado</a>
+  <a href="#tablas">9. Tablas</a>
+  <a href="#alertas">10. Alertas</a>
+  <a href="#navegacion">11. Paginación y migas</a>
+  <a href="#vacio">12. Estado vacío</a>
+  <a href="#portada">13. Portada y accesos</a>
+  <a href="#menugrupos">14. Menú con grupos</a>
+  <a href="#reglas">15. Reglas de uso</a>
+</nav>
+
+<div>
+
+<!-- 1. COLOR -->
+<h2 id="fundamentos">1. Color</h2>
+<p>Todos los colores del proyecto están declarados como variables CSS en <code>:root</code>. En el módulo se usa siempre la variable, nunca el valor hexadecimal.</p>
+
+<h3>Marca</h3>
+<div class="guia-fichas mb-6">
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--marca-900)"></div><div class="guia-ficha__datos"><b>Marca 900</b><span>--marca-900 · #10204A</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--marca-700)"></div><div class="guia-ficha__datos"><b>Marca 700 · primario</b><span>--marca-700 · #1A3FA0</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--marca-500)"></div><div class="guia-ficha__datos"><b>Marca 500</b><span>--marca-500 · #2D5BD4</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--marca-100)"></div><div class="guia-ficha__datos"><b>Marca 100</b><span>--marca-100 · #E6EDFC</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--acento)"></div><div class="guia-ficha__datos"><b>Acento</b><span>--acento · #C9461A</span></div></div>
+</div>
+
+<h3>Texto y superficies</h3>
+<div class="guia-fichas mb-6">
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--tinta)"></div><div class="guia-ficha__datos"><b>Tinta · títulos</b><span>--tinta · #13223B</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--texto)"></div><div class="guia-ficha__datos"><b>Texto · cuerpo</b><span>--texto · #2C3B52</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--texto-suave)"></div><div class="guia-ficha__datos"><b>Texto suave</b><span>--texto-suave · #4A5B73</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--superficie)"></div><div class="guia-ficha__datos"><b>Superficie</b><span>--superficie · #F6F8FB</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--borde)"></div><div class="guia-ficha__datos"><b>Borde</b><span>--borde · #D3DCE8</span></div></div>
+</div>
+
+<h3>Estados</h3>
+<div class="guia-fichas mb-6">
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--exito)"></div><div class="guia-ficha__datos"><b>Éxito</b><span>--exito · #15803D</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--alerta)"></div><div class="guia-ficha__datos"><b>Alerta</b><span>--alerta · #9A5B00</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--error)"></div><div class="guia-ficha__datos"><b>Error</b><span>--error · #B3261E</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:var(--info)"></div><div class="guia-ficha__datos"><b>Información</b><span>--info · #1D4ED8</span></div></div>
+</div>
+
+<div class="guia-nota">
+  <p><b>Contraste.</b> Todos los colores de texto de esta paleta superan la relación 4.5:1 sobre fondo blanco, el mínimo exigido por la norma WCAG 2.1 nivel AA. Un color inventado por el equipo no tiene esa garantía.</p>
+</div>
+
+<!-- 2. ÁREAS -->
+<h2 id="areas">2. Áreas de conocimiento</h2>
+<p>Las diez carreras se agrupan en cinco áreas. El color del área se aplica poniendo una clase en <code>&lt;body&gt;</code>; a partir de ahí, la variable <code>--area</code> cambia en toda la página y los componentes que la usan se tiñen solos.</p>
+
+<div class="guia-fichas mb-4">
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:#1D4ED8"></div><div class="guia-ficha__datos"><b>Tecnología</b><span>.area-tecnologia</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:#0F766E"></div><div class="guia-ficha__datos"><b>Salud</b><span>.area-salud</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:#6D28D9"></div><div class="guia-ficha__datos"><b>Económico-administrativa</b><span>.area-administrativa</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:#B4530A"></div><div class="guia-ficha__datos"><b>Turismo y gastronomía</b><span>.area-servicios</span></div></div>
+  <div class="guia-ficha"><div class="guia-ficha__color" style="background:#15803D"></div><div class="guia-ficha__datos"><b>Agroindustrial y energía</b><span>.area-agroindustrial</span></div></div>
+</div>
+
+<div class="guia-codigo"><code>&lt;body class="area-salud"&gt;
+    &lt;!-- --area pasa a ser #0F766E en toda la página --&gt;
+&lt;/body&gt;</code></div>
+
+<div class="tabla-envoltura mb-6"><table class="tabla" style="min-width:auto">
+  <caption>Correspondencia de carreras</caption>
+  <thead><tr><th scope="col">Área</th><th scope="col">Carreras</th></tr></thead>
+  <tbody>
+    <tr><td>Tecnología</td><td>Tecnologías de la Información · Mantenimiento Industrial</td></tr>
+    <tr><td>Salud</td><td>Médico Cirujano · Terapia Física</td></tr>
+    <tr><td>Económico-administrativa</td><td>Contaduría · Mercadotecnia</td></tr>
+    <tr><td>Turismo y gastronomía</td><td>Turismo · Gastronomía</td></tr>
+    <tr><td>Agroindustrial y energía</td><td>Agricultura · Energías Renovables</td></tr>
+  </tbody>
+</table></div>
+
+<!-- 3. TIPOGRAFÍA -->
+<h2 id="tipografia">3. Tipografía</h2>
+<p><b>Outfit</b> para títulos y <b>Inter</b> para texto corrido. Ambas se cargan desde Google Fonts en el núcleo; si no hay conexión, el navegador usa la fuente del sistema y la página sigue siendo legible.</p>
+
+<div class="guia-muestra guia-escala">
+  <div><h1 class="sin-margen">Título de página · h1 · 36 px</h1></div>
+  <div><h2 class="sin-margen">Título de sección · h2 · 28 px</h2></div>
+  <div><h3 class="sin-margen">Subtítulo · h3 · 22 px</h3></div>
+  <div><p class="entradilla sin-margen">Entradilla · 18 px · <code>.entradilla</code></p></div>
+  <div><p class="sin-margen">Texto de cuerpo · 16 px · interlineado 1.6</p></div>
+  <div><p class="leyenda sin-margen">Leyenda · 14 px · <code>.leyenda</code></p></div>
+</div>
+<div class="guia-codigo"><code>&lt;h2&gt;Título de sección&lt;/h2&gt;
+&lt;p class="entradilla"&gt;Texto introductorio de la pantalla.&lt;/p&gt;
+&lt;p&gt;Texto de cuerpo.&lt;/p&gt;
+&lt;p class="leyenda"&gt;Nota al pie de una figura o dato.&lt;/p&gt;</code></div>
+
+<!-- 4. ESPACIADO -->
+<h2 id="espaciado">4. Espaciado y radios</h2>
+<p>El espaciado sigue una escala de cuatro píxeles. No se escriben medidas sueltas: se usa la variable más cercana.</p>
+<div class="tabla-envoltura mb-6">
+  <table class="tabla" style="min-width:auto">
+    <thead><tr><th scope="col">Variable</th><th scope="col">Valor</th><th scope="col">Uso habitual</th></tr></thead>
+    <tbody>
+      <tr><td><code>--e1</code></td><td>4 px</td><td>Separación entre un control y su leyenda</td></tr>
+      <tr><td><code>--e2</code></td><td>8 px</td><td>Espacio entre elementos de una misma línea</td></tr>
+      <tr><td><code>--e3</code></td><td>12 px</td><td>Relleno interno de controles</td></tr>
+      <tr><td><code>--e4</code></td><td>16 px</td><td>Relleno de tarjetas, separación entre párrafos</td></tr>
+      <tr><td><code>--e5</code></td><td>24 px</td><td>Separación entre bloques</td></tr>
+      <tr><td><code>--e6</code></td><td>32 px</td><td>Separación entre subsecciones</td></tr>
+      <tr><td><code>--e7</code></td><td>48 px</td><td>Relleno vertical de secciones</td></tr>
+      <tr><td><code>--e8</code></td><td>64 px</td><td>Relleno de la portada</td></tr>
+      <tr><td><code>--radio-sm</code></td><td>6 px</td><td>Botones, controles de formulario</td></tr>
+      <tr><td><code>--radio-md</code></td><td>10 px</td><td>Tarjetas, paneles, tablas</td></tr>
+      <tr><td><code>--radio-pastilla</code></td><td>999 px</td><td>Insignias y chips</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 5. BOTONES -->
+<h2 id="componentes">5. Botones</h2>
+<p>Una pantalla tiene <b>una sola</b> acción primaria. El resto son secundarias. La altura mínima de 44 píxeles garantiza que el botón se pueda tocar con el dedo.</p>
+<div class="guia-muestra">
+  <div class="fila">
+    <button class="boton boton--primario">Guardar cambios</button>
+    <button class="boton boton--secundario">Cancelar</button>
+    <button class="boton boton--acento">Solicitar ahora</button>
+    <button class="boton boton--peligro">Eliminar</button>
+    <button class="boton boton--fantasma">Ver detalle</button>
+    <button class="boton boton--primario" disabled>Deshabilitado</button>
+    <button class="boton boton--secundario boton--pequeno">Editar</button>
+  </div>
+</div>
+<div class="guia-codigo"><code>&lt;button class="boton boton--primario"&gt;Guardar cambios&lt;/button&gt;
+&lt;a class="boton boton--secundario" href="listado.php"&gt;Cancelar&lt;/a&gt;
+&lt;button class="boton boton--peligro"&gt;Eliminar&lt;/button&gt;
+&lt;button class="boton boton--secundario boton--pequeno"&gt;Editar&lt;/button&gt;</code></div>
+
+<!-- 6. FORMULARIOS -->
+<h2 id="formularios">6. Formularios</h2>
+<p>Todo control lleva su <code>&lt;label&gt;</code> asociado con <code>for</code>. El mensaje de error se coloca debajo del control y se enlaza con <code>aria-describedby</code>.</p>
+<div class="guia-muestra">
+  <form class="formulario" onsubmit="return false">
+    <fieldset class="grupo-campos">
+      <legend class="grupo-campos__titulo">Datos del aspirante</legend>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="g-nombre">Nombre completo <span class="campo__requerido" aria-hidden="true">*</span></label>
+        <input class="campo__control" type="text" id="g-nombre" name="nombre" maxlength="100" required>
+        <small class="campo__ayuda">Como aparece en tu certificado.</small>
+      </div>
+
+      <div class="campo campo--invalido">
+        <label class="campo__etiqueta" for="g-correo">Correo electrónico</label>
+        <input class="campo__control" type="email" id="g-correo" value="correo-sin-arroba" aria-describedby="g-correo-error">
+        <small class="campo__error" id="g-correo-error">Escribe un correo válido, por ejemplo nombre@dominio.mx</small>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="g-carrera">Carrera de interés</label>
+        <select class="campo__control" id="g-carrera" name="carrera">
+          <option value="">Selecciona una opción</option>
+          <option>Tecnologías de la Información</option>
+          <option>Gastronomía</option>
+          <option>Terapia Física</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="g-mensaje">Comentarios</label>
+        <textarea class="campo__control" id="g-mensaje" rows="3"></textarea>
+      </div>
+
+      <div class="campo">
+        <span class="campo__etiqueta">Medio de contacto</span>
+        <label class="opcion"><input type="radio" name="g-medio" checked> Correo electrónico</label>
+        <label class="opcion"><input type="radio" name="g-medio"> Teléfono</label>
+        <label class="opcion"><input type="checkbox"> Acepto el aviso de privacidad</label>
+      </div>
+    </fieldset>
+    <button class="boton boton--primario">Enviar registro</button>
+  </form>
+</div>
+<div class="guia-codigo"><code>&lt;div class="campo"&gt;
+    &lt;label class="campo__etiqueta" for="nombre"&gt;
+        Nombre completo &lt;span class="campo__requerido" aria-hidden="true"&gt;*&lt;/span&gt;
+    &lt;/label&gt;
+    &lt;input class="campo__control" type="text" id="nombre" name="nombre" required&gt;
+    &lt;small class="campo__ayuda"&gt;Como aparece en tu certificado.&lt;/small&gt;
+&lt;/div&gt;
+
+&lt;!-- Con error devuelto por el servidor --&gt;
+&lt;div class="campo campo--invalido"&gt;
+    &lt;label class="campo__etiqueta" for="correo"&gt;Correo electrónico&lt;/label&gt;
+    &lt;input class="campo__control" type="email" id="correo"
+           aria-describedby="correo-error"&gt;
+    &lt;small class="campo__error" id="correo-error"&gt;Escribe un correo válido.&lt;/small&gt;
+&lt;/div&gt;</code></div>
+
+<!-- 7. TARJETAS -->
+<h2 id="tarjetas">7. Tarjetas y rejilla</h2>
+<p>La rejilla acomoda las tarjetas sola: no se declaran columnas por tamaño de pantalla. Una tarjeta completa que lleva a una ficha se marca como enlace, no con un botón dentro.</p>
+<div class="guia-muestra">
+  <div class="rejilla">
+    <a class="tarjeta tarjeta--area" href="#tarjetas">
+      <div class="tarjeta__medio" style="background:linear-gradient(135deg,#1A3FA0,#2D5BD4)"></div>
+      <div class="tarjeta__cuerpo">
+        <h3 class="tarjeta__titulo">Tecnologías de la Información</h3>
+        <p class="leyenda">Ingeniería · 11 cuatrimestres · Escolarizada</p>
+      </div>
+      <div class="tarjeta__pie"><span class="insignia insignia--publicado">Publicada</span><span>Ver ficha</span></div>
+    </a>
+    <article class="tarjeta">
+      <div class="tarjeta__cuerpo">
+        <h3 class="tarjeta__titulo">Visita guiada al campus</h3>
+        <p>Recorrido por laboratorios y talleres con estudiantes de cada carrera.</p>
+        <p class="leyenda">12 lugares disponibles</p>
+      </div>
+      <div class="tarjeta__pie"><span class="insignia insignia--info">Cupo abierto</span><button class="boton boton--secundario boton--pequeno">Registrarme</button></div>
+    </article>
+    <article class="tarjeta">
+      <div class="tarjeta__cuerpo">
+        <h3 class="tarjeta__titulo">Beca de transporte</h3>
+        <p>Apoyo mensual para aspirantes foráneos.</p>
+      </div>
+      <div class="tarjeta__pie"><span class="insignia insignia--revision">En revisión</span><span>Folio 00124</span></div>
+    </article>
+  </div>
+</div>
+<div class="guia-codigo"><code>&lt;div class="rejilla"&gt;
+    &lt;a class="tarjeta tarjeta--area" href="ficha.php?id=1"&gt;
+        &lt;img class="tarjeta__medio" src="..." alt="..."&gt;
+        &lt;div class="tarjeta__cuerpo"&gt;
+            &lt;h3 class="tarjeta__titulo"&gt;Título&lt;/h3&gt;
+            &lt;p class="leyenda"&gt;Datos secundarios&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;div class="tarjeta__pie"&gt;
+            &lt;span class="insignia insignia--publicado"&gt;Publicada&lt;/span&gt;
+            &lt;span&gt;Ver ficha&lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/a&gt;
+&lt;/div&gt;</code></div>
+
+<!-- 8. INSIGNIAS -->
+<h2 id="insignias">8. Insignias de estado</h2>
+<p>Cada módulo tiene un proceso con estados. Se representan siempre con esta insignia. El estado nunca se comunica solo con color: la palabra va escrita.</p>
+<div class="guia-muestra">
+  <div class="fila">
+    <span class="insignia insignia--borrador">Borrador</span>
+    <span class="insignia insignia--revision">En revisión</span>
+    <span class="insignia insignia--publicado">Publicado</span>
+    <span class="insignia insignia--rechazado">Rechazado</span>
+    <span class="insignia insignia--archivado">Archivado</span>
+    <span class="insignia insignia--info">Programado</span>
+  </div>
+  <hr>
+  <div class="fila">
+    <button class="chip" aria-pressed="true">Todas las áreas</button>
+    <button class="chip" aria-pressed="false">Salud</button>
+    <button class="chip" aria-pressed="false">Tecnología</button>
+  </div>
+</div>
+<div class="guia-codigo"><code>&lt;span class="insignia insignia--publicado"&gt;Publicado&lt;/span&gt;
+&lt;button class="chip" aria-pressed="true"&gt;Todas las áreas&lt;/button&gt;</code></div>
+
+<!-- 9. TABLAS -->
+<h2 id="tablas">9. Tablas</h2>
+<p>Las tablas son para los paneles de administración, no para maquetar. Siempre dentro de <code>.tabla-envoltura</code>: así se desplazan ellas en pantalla angosta y la página no.</p>
+<div class="guia-muestra">
+  <div class="tabla-envoltura">
+    <table class="tabla">
+      <caption>Solicitudes recibidas</caption>
+      <thead>
+        <tr><th scope="col">Folio</th><th scope="col">Aspirante</th><th scope="col">Programa</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>00124</td><td>María Fernanda Ruiz</td><td>Beca de transporte</td><td><span class="insignia insignia--revision">En revisión</span></td>
+            <td><div class="tabla__acciones"><button class="boton boton--secundario boton--pequeno">Ver</button><button class="boton boton--peligro boton--pequeno">Rechazar</button></div></td></tr>
+        <tr><td>00125</td><td>Luis Ángel Pérez</td><td>Beca alimentaria</td><td><span class="insignia insignia--publicado">Aprobada</span></td>
+            <td><div class="tabla__acciones"><button class="boton boton--secundario boton--pequeno">Ver</button></div></td></tr>
+        <tr><td>00126</td><td>Ana Sofía Gómez</td><td>Beca de transporte</td><td><span class="insignia insignia--borrador">Borrador</span></td>
+            <td><div class="tabla__acciones"><button class="boton boton--secundario boton--pequeno">Ver</button></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="guia-codigo"><code>&lt;div class="tabla-envoltura"&gt;
+    &lt;table class="tabla"&gt;
+        &lt;caption&gt;Solicitudes recibidas&lt;/caption&gt;
+        &lt;thead&gt;&lt;tr&gt;&lt;th scope="col"&gt;Folio&lt;/th&gt; ... &lt;/tr&gt;&lt;/thead&gt;
+        &lt;tbody&gt; ... &lt;/tbody&gt;
+    &lt;/table&gt;
+&lt;/div&gt;</code></div>
+
+<!-- 10. ALERTAS -->
+<h2 id="alertas">10. Alertas</h2>
+<p>Es el mensaje que el servidor deja tras una operación. Va inmediatamente después del encabezado de la pantalla, siguiendo el patrón POST-Redirect-GET.</p>
+<div class="guia-muestra">
+  <div class="alerta alerta--exito" role="status"><p><span class="alerta__titulo">Registro guardado.</span> El folio de tu solicitud es 00127.</p></div>
+  <div class="alerta alerta--error" role="alert"><p><span class="alerta__titulo">No se pudo guardar.</span> Revisa los campos marcados en rojo.</p></div>
+  <div class="alerta alerta--alerta"><p><span class="alerta__titulo">Quedan 3 lugares.</span> El cupo se confirma al enviar el registro.</p></div>
+  <div class="alerta alerta--info" style="margin-bottom:0"><p>La convocatoria cierra el último día del mes.</p></div>
+</div>
+<div class="guia-codigo"><code>&lt;div class="alerta alerta--exito" role="status"&gt;
+    &lt;p&gt;&lt;span class="alerta__titulo"&gt;Registro guardado.&lt;/span&gt; El folio es 00127.&lt;/p&gt;
+&lt;/div&gt;</code></div>
+
+<!-- 11. NAVEGACIÓN -->
+<h2 id="navegacion">11. Paginación y migas de pan</h2>
+<div class="guia-muestra">
+  <nav aria-label="Ruta">
+    <ol class="migas">
+      <li><a href="#">Inicio</a></li>
+      <li><a href="#">Becas</a></li>
+      <li>Beca de transporte</li>
+    </ol>
+  </nav>
+  <nav aria-label="Paginación">
+    <ul class="paginacion">
+      <li><a href="#navegacion">Anterior</a></li>
+      <li><span aria-current="page">1</span></li>
+      <li><a href="#navegacion">2</a></li>
+      <li><a href="#navegacion">3</a></li>
+      <li><a href="#navegacion">Siguiente</a></li>
+    </ul>
+  </nav>
+</div>
+
+<!-- 12. VACÍO -->
+<h2 id="vacio">12. Estado vacío</h2>
+<p>Lo que se muestra cuando una consulta no devuelve registros. Toda pantalla de listado debe resolverlo: una tabla vacía sin mensaje se considera pantalla incompleta.</p>
+<div class="guia-muestra">
+  <div class="vacio">
+    <h3>No hay solicitudes con ese filtro</h3>
+    <p class="ancho-lectura">Prueba con otro programa o quita los filtros para ver todas las solicitudes recibidas.</p>
+    <button class="boton boton--secundario">Quitar filtros</button>
+  </div>
+</div>
+
+
+<!-- 13. PORTADA Y ACCESOS -->
+<h2 id="portada">13. Portada y accesos</h2>
+<p>Componentes de la página de inicio de la plataforma, incorporados en la versión 1.1. Un módulo no está obligado a usarlos, pero están disponibles si su pantalla principal los necesita.</p>
+
+<h3>Portada con imagen</h3>
+<p>La fotografía se declara en la propia página con la variable <code>--portada-imagen</code>. Si la variable no existe, queda el degradado y la portada sigue funcionando: nunca se ve una imagen rota.</p>
+<div class="guia-muestra" style="padding:0;overflow:hidden">
+  <section class="portada portada--imagen" style="padding-block:var(--e6)">
+    <div class="contenedor portada__contenido">
+      <h1 style="font-size:1.75rem">Hay una carrera que se parece a ti</h1>
+      <p class="entradilla">Conoce las diez carreras, recorre sus laboratorios y agenda tu visita.</p>
+      <div class="portada__acciones">
+        <a class="boton boton--acento" href="#portada">Haz el test vocacional</a>
+        <a class="boton boton--secundario" href="#portada">Ver las carreras</a>
+      </div>
+      <div class="cifras">
+        <div class="cifra"><span class="cifra__numero">10</span><span class="cifra__texto">carreras</span></div>
+        <div class="cifra"><span class="cifra__numero">5</span><span class="cifra__texto">áreas de conocimiento</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="guia-codigo"><code>&lt;section class="portada portada--imagen"
+         style="--portada-imagen:url('img/portada.jpg')"&gt;
+    &lt;div class="contenedor portada__contenido"&gt;
+        &lt;h1&gt;Título de la portada&lt;/h1&gt;
+        &lt;p class="entradilla"&gt;Frase de entrada.&lt;/p&gt;
+
+        &lt;div class="portada__acciones"&gt;
+            &lt;a class="boton boton--acento" href="..."&gt;Acción principal&lt;/a&gt;
+            &lt;a class="boton boton--secundario" href="..."&gt;Acción secundaria&lt;/a&gt;
+        &lt;/div&gt;
+
+        &lt;div class="cifras"&gt;
+            &lt;div class="cifra"&gt;
+                &lt;span class="cifra__numero"&gt;10&lt;/span&gt;
+                &lt;span class="cifra__texto"&gt;carreras&lt;/span&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;</code></div>
+
+<h3>Acceso</h3>
+<p>Tarjeta ancha con distintivo de color. Sirve mientras no hay fotografía: el distintivo ocupa el lugar de la imagen y la tarjeta no se ve incompleta. La variante <code>.acceso--inactivo</code> marca lo que todavía no está disponible y le quita el foco y el clic.</p>
+<div class="guia-muestra">
+  <div class="accesos">
+    <a class="acceso area-tecnologia" href="#portada">
+      <span class="acceso__distintivo" aria-hidden="true">CAR</span>
+      <span>
+        <span class="acceso__titulo">Explorador de carreras</span>
+        <span class="acceso__texto">Plan de estudios, perfil de egreso y laboratorios de cada carrera.</span>
+      </span>
+    </a>
+    <a class="acceso area-salud" href="#portada">
+      <span class="acceso__distintivo" aria-hidden="true">REC</span>
+      <span>
+        <span class="acceso__titulo">Recorridos virtuales</span>
+        <span class="acceso__texto">Recorre los laboratorios sin salir de tu casa.</span>
+      </span>
+    </a>
+    <a class="acceso acceso--inactivo" href="#portada" aria-disabled="true" tabindex="-1">
+      <span class="acceso__distintivo" aria-hidden="true">NOT</span>
+      <span>
+        <span class="acceso__titulo">Noticias y eventos</span>
+        <span class="acceso__texto">Disponible próximamente.</span>
+      </span>
+    </a>
+  </div>
+</div>
+<div class="guia-codigo"><code>&lt;div class="accesos"&gt;
+    &lt;a class="acceso area-tecnologia" href="modulos/carreras/"&gt;
+        &lt;span class="acceso__distintivo" aria-hidden="true"&gt;CAR&lt;/span&gt;
+        &lt;span&gt;
+            &lt;span class="acceso__titulo"&gt;Explorador de carreras&lt;/span&gt;
+            &lt;span class="acceso__texto"&gt;Descripción breve.&lt;/span&gt;
+        &lt;/span&gt;
+    &lt;/a&gt;
+
+    &lt;!-- Todavía no disponible --&gt;
+    &lt;a class="acceso acceso--inactivo" href="#" aria-disabled="true" tabindex="-1"&gt; … &lt;/a&gt;
+&lt;/div&gt;</code></div>
+
+<!-- 14. MENÚ CON GRUPOS -->
+<h2 id="menugrupos">14. Menú con grupos</h2>
+<p>Diez enlaces no caben en una barra. Los grupos se resuelven con <code>&lt;details&gt;</code> y <code>&lt;summary&gt;</code>, que funcionan con teclado y sin JavaScript. En pantallas menores de 860 píxeles el grupo se despliega en bloque y el encabezado deja de ser fijo.</p>
+<div class="guia-muestra">
+  <nav aria-label="Ejemplo">
+    <ul class="menu">
+      <li><a href="#menugrupos">Inicio</a></li>
+      <li><a href="#menugrupos">Carreras</a></li>
+      <li>
+        <details class="menu__grupo">
+          <summary>Explora</summary>
+          <ul class="menu__lista">
+            <li><a href="#menugrupos">Test vocacional</a></li>
+            <li><a href="#menugrupos">Recorridos virtuales</a></li>
+            <li><a href="#menugrupos">Portafolio de proyectos</a></li>
+          </ul>
+        </details>
+      </li>
+      <li><a href="#menugrupos">Visítanos</a></li>
+    </ul>
+  </nav>
+</div>
+<div class="guia-codigo"><code>&lt;li&gt;
+    &lt;details class="menu__grupo"&gt;
+        &lt;summary&gt;Explora&lt;/summary&gt;
+        &lt;ul class="menu__lista"&gt;
+            &lt;li&gt;&lt;a href="..."&gt;Test vocacional&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="..."&gt;Recorridos virtuales&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/details&gt;
+&lt;/li&gt;</code></div>
+
+<div class="guia-nota">
+  <p><b>Los grupos se arman por lo que el usuario busca, no por quién desarrolló el módulo.</b> El aspirante no sabe ni le importa qué equipo hizo cada parte.</p>
+</div>
+
+<!-- 15. REGLAS -->
+<h2 id="reglas">15. Reglas de uso</h2>
+<ol>
+  <li><b>La hoja <code>ev-base.css</code> no se modifica.</b> Es parte del núcleo. Un cambio en ella afecta a los diez módulos.</li>
+  <li><b>Los colores se usan por variable.</b> Si en el módulo aparece un valor hexadecimal escrito a mano, está mal.</li>
+  <li><b>No se agregan fuentes.</b> Outfit e Inter son las dos del proyecto.</li>
+  <li><b>El estado se escribe, no solo se colorea.</b> Quien no distingue colores debe poder leer el estado.</li>
+  <li><b>Una acción primaria por pantalla.</b> Si todo es primario, nada lo es.</li>
+  <li><b>Lo que exista aquí no se vuelve a escribir.</b> La hoja del módulo resuelve únicamente lo propio del módulo.</li>
+  <li><b>Sin desplazamiento horizontal a 375 píxeles.</b> Es criterio de la lista de verificación de la entrega.</li>
+</ol>
+
+<div class="guia-nota">
+  <p><b>Cómo se enlaza en cada página del módulo.</b></p>
+</div>
+<div class="guia-codigo"><code>&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
+&lt;link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"&gt;
+&lt;link rel="stylesheet" href="/css/ev-base.css"&gt;
+&lt;link rel="stylesheet" href="css/modulo.css"&gt;</code></div>
+
+</div>
+</div>
+</main>
+
+<footer class="pie">
+  <div class="contenedor">
+    <p class="sin-margen">Explorador Vocacional UTBB · Sistema de diseño común, versión 1.0 · Aplicaciones Web, clave E-APW-2</p>
+  </div>
+</footer>
+
+</body>
+</html>

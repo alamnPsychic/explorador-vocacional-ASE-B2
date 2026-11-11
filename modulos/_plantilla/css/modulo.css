@@ -1,0 +1,34 @@
+/* ============================================================================
+   MÓDULO PLANTILLA · modulo.css
+   Explorador Vocacional UTBB
+
+   Esta hoja es TUYA. Aquí va únicamente lo que el sistema de diseño no
+   resuelve: una pieza propia de tu módulo, como el reproductor de escenas
+   del recorrido virtual o la barra de avance del test vocacional.
+
+   ANTES DE ESCRIBIR AQUÍ, REVISA LA GUÍA VISUAL. Si el componente ya existe,
+   se usa; no se vuelve a escribir.
+
+   Reglas
+     · Se usan las variables del núcleo: var(--marca-700), var(--e4)...
+       Un valor hexadecimal escrito a mano en este archivo es un error.
+     · No se redefine nada de ev-base.css. Si algo del sistema no te sirve,
+       se plantea en clase; no se parcha por módulo.
+     · Los nombres de clase llevan el prefijo del módulo para no chocar con
+       los de otro equipo al integrar: .plt-escena, .plt-avance
+   ========================================================================= */
+
+
+/* Ejemplo de componente propio del módulo. Bórralo cuando no lo uses. */
+.plt-avance {
+    height: 8px;
+    background: var(--marca-100);
+    border-radius: var(--radio-pastilla);
+    overflow: hidden;
+}
+
+.plt-avance__barra {
+    height: 100%;
+    background: var(--area);
+    transition: width var(--transicion);
+}

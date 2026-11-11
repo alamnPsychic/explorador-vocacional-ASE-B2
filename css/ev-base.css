@@ -1,0 +1,935 @@
+/* ============================================================================
+   EXPLORADOR VOCACIONAL UTBB
+   Sistema de diseño común · ev-base.css · Versión 1.1
+
+   Esta hoja es parte del núcleo de la plataforma. NO SE MODIFICA.
+   Cada módulo escribe sus estilos propios en /modulos/<nombre>/css/modulo.css
+   y únicamente para lo que esta hoja no resuelve.
+
+   Orden de carga en toda página:
+       <link rel="stylesheet" href="/css/ev-base.css">
+       <link rel="stylesheet" href="css/modulo.css">
+
+   Índice
+     1. Tokens de diseño
+     2. Reinicio y base
+     3. Tipografía
+     4. Disposición (contenedor y rejilla)
+     5. Encabezado, navegación y pie
+     6. Botones
+     7. Formularios
+     8. Tarjetas
+     9. Insignias de estado
+    10. Tablas
+    11. Alertas
+    12. Paginación y migas de pan
+    13. Estado vacío
+    14. Utilidades mínimas
+    15. Accesibilidad
+   ========================================================================== */
+
+
+/* 1. TOKENS DE DISEÑO =======================================================
+   Todo color, medida y tipografía del proyecto sale de aquí.
+   Si necesitas un valor que no está en esta lista, probablemente no lo
+   necesitas: revisa primero si alguno existente resuelve el caso.
+   -------------------------------------------------------------------------- */
+
+:root {
+
+    /* --- Color de marca --- */
+    --marca-900: #10204A;   /* fondos profundos, pie de página            */
+    --marca-700: #1A3FA0;   /* color primario: botones, enlaces, títulos  */
+    --marca-500: #2D5BD4;   /* estados hover, acentos sobre fondo claro   */
+    --marca-100: #E6EDFC;   /* fondos suaves, selección, chips            */
+
+    /* --- Color de acento (llamadas a la acción secundarias) --- */
+    --acento:       #C9461A;
+    --acento-suave: #FDEDE5;
+
+    /* --- Texto --- */
+    --tinta:       #13223B;  /* títulos                                   */
+    --texto:       #2C3B52;  /* cuerpo                                    */
+    --texto-suave: #4A5B73;  /* leyendas, texto secundario                */
+
+    /* --- Superficies --- */
+    --blanco:    #FFFFFF;
+    --superficie: #F6F8FB;   /* fondo de página                           */
+    --borde:      #D3DCE8;
+    --borde-fuerte: #AEBED2;
+
+    /* --- Estados --- */
+    --exito: #15803D;  --exito-fondo: #E8F6EC;
+    --alerta: #9A5B00; --alerta-fondo: #FDF3E0;
+    --error: #B3261E;  --error-fondo: #FBEAE8;
+    --info:  #1D4ED8;  --info-fondo: #E8EEFD;
+
+    /* --- Color por área de conocimiento ---
+       Cada carrera pertenece a un área. El color del área se aplica poniendo
+       la clase correspondiente en <body>: class="area-salud".
+       Por omisión, el área toma el color de marca.                        */
+    --area: var(--marca-700);
+    --area-suave: var(--marca-100);
+
+    /* --- Tipografía --- */
+    --fuente-titulo: "Outfit", "Segoe UI", Roboto, Arial, sans-serif;
+    --fuente-texto:  "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+
+    --t-xs:  0.8125rem;  /* 13px · leyendas            */
+    --t-sm:  0.875rem;   /* 14px · texto auxiliar      */
+    --t-md:  1rem;       /* 16px · cuerpo              */
+    --t-lg:  1.125rem;   /* 18px · entradilla          */
+    --t-xl:  1.375rem;   /* 22px · h3                  */
+    --t-2xl: 1.75rem;    /* 28px · h2                  */
+    --t-3xl: 2.25rem;    /* 36px · h1                  */
+
+    --peso-normal: 400;
+    --peso-medio:  500;
+    --peso-fuerte: 600;
+
+    /* --- Espaciado (escala de 4) --- */
+    --e1: 0.25rem;  --e2: 0.5rem;   --e3: 0.75rem;  --e4: 1rem;
+    --e5: 1.5rem;   --e6: 2rem;     --e7: 3rem;     --e8: 4rem;
+
+    /* --- Radios y sombras --- */
+    --radio-sm: 6px;
+    --radio-md: 10px;
+    --radio-pastilla: 999px;
+
+    --sombra-1: 0 1px 2px rgba(16, 32, 74, 0.06);
+    --sombra-2: 0 2px 8px rgba(16, 32, 74, 0.08);
+    --sombra-3: 0 8px 24px rgba(16, 32, 74, 0.12);
+
+    /* --- Medidas --- */
+    --ancho-contenedor: 1120px;
+    --ancho-lectura: 68ch;
+
+    --transicion: 150ms ease;
+}
+
+/* Áreas de conocimiento. Se aplican en <body>. */
+.area-tecnologia       { --area: #1D4ED8; --area-suave: #E8EEFD; }
+.area-salud            { --area: #0F766E; --area-suave: #E3F4F2; }
+.area-administrativa   { --area: #6D28D9; --area-suave: #F0E9FD; }
+.area-servicios        { --area: #B4530A; --area-suave: #FDF1E4; }
+.area-agroindustrial   { --area: #15803D; --area-suave: #E8F6EC; }
+
+
+/* 2. REINICIO Y BASE ======================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body, h1, h2, h3, h4, p, figure, blockquote, ul, ol, dl, dd {
+    margin: 0;
+}
+
+ul[class], ol[class] { list-style: none; padding: 0; }
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: var(--fuente-texto);
+    font-size: var(--t-md);
+    line-height: 1.6;
+    color: var(--texto);
+    background-color: var(--superficie);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+input, button, textarea, select { font: inherit; color: inherit; }
+
+main { flex: 1 0 auto; }
+
+
+/* 3. TIPOGRAFÍA ============================================================= */
+
+h1, h2, h3, h4 {
+    font-family: var(--fuente-titulo);
+    font-weight: var(--peso-fuerte);
+    line-height: 1.2;
+    color: var(--tinta);
+    text-wrap: balance;
+}
+
+h1 { font-size: var(--t-3xl); margin-bottom: var(--e4); }
+h2 { font-size: var(--t-2xl); margin-bottom: var(--e3); }
+h3 { font-size: var(--t-xl);  margin-bottom: var(--e2); }
+h4 { font-size: var(--t-lg);  margin-bottom: var(--e2); }
+
+p { margin-bottom: var(--e4); max-width: var(--ancho-lectura); }
+
+.entradilla {
+    font-size: var(--t-lg);
+    color: var(--texto-suave);
+}
+
+.leyenda {
+    font-size: var(--t-sm);
+    color: var(--texto-suave);
+}
+
+a {
+    color: var(--marca-700);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: color var(--transicion);
+}
+
+a:hover { color: var(--marca-500); }
+
+strong, b { font-weight: var(--peso-fuerte); color: var(--tinta); }
+
+code {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--marca-100);
+    padding: 0.1em 0.35em;
+    border-radius: var(--radio-sm);
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--borde);
+    margin: var(--e6) 0;
+}
+
+
+/* 4. DISPOSICIÓN ============================================================ */
+
+.contenedor {
+    width: 100%;
+    max-width: var(--ancho-contenedor);
+    margin-inline: auto;
+    padding-inline: var(--e4);
+}
+
+.seccion { padding-block: var(--e7); }
+
+/* Rejilla automática. Las tarjetas se acomodan solas según el ancho
+   disponible; no hace falta declarar columnas por tamaño de pantalla. */
+.rejilla {
+    display: grid;
+    gap: var(--e5);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.rejilla--amplia { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+
+/* Dos columnas: contenido principal y barra lateral de filtros. */
+.disposicion-filtros {
+    display: grid;
+    gap: var(--e5);
+    grid-template-columns: 1fr;
+}
+
+/* Sin esto, un bloque ancho dentro de una celda (una tabla, un bloque de
+   código) ensancha toda la rejilla y la página se desplaza en horizontal. */
+.rejilla > *,
+.disposicion-filtros > * { min-width: 0; }
+
+@media (min-width: 900px) {
+    .disposicion-filtros { grid-template-columns: 260px 1fr; }
+}
+
+.fila {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e3);
+    align-items: center;
+}
+
+.fila--separada { justify-content: space-between; }
+
+
+/* 5. ENCABEZADO, NAVEGACIÓN Y PIE =========================================== */
+
+.encabezado {
+    background: var(--blanco);
+    border-bottom: 1px solid var(--borde);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.encabezado__barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e4);
+    min-height: 64px;
+}
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: var(--e2);
+    font-family: var(--fuente-titulo);
+    font-weight: var(--peso-fuerte);
+    font-size: var(--t-lg);
+    color: var(--tinta);
+    text-decoration: none;
+}
+
+.marca__distintivo {
+    width: 32px; height: 32px;
+    border-radius: var(--radio-sm);
+    background: var(--area);
+    display: grid; place-items: center;
+    color: var(--blanco);
+    font-size: var(--t-sm);
+}
+
+.menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e1);
+    list-style: none;
+    margin: 0; padding: 0;
+}
+
+.menu a {
+    display: block;
+    padding: var(--e2) var(--e3);
+    border-radius: var(--radio-sm);
+    color: var(--texto);
+    text-decoration: none;
+    font-size: var(--t-sm);
+    font-weight: var(--peso-medio);
+}
+
+.menu a:hover { background: var(--superficie); color: var(--marca-700); }
+
+.menu a[aria-current="page"] {
+    background: var(--area-suave);
+    color: var(--area);
+}
+
+.portada {
+    background: linear-gradient(135deg, var(--marca-900), var(--marca-700));
+    color: var(--blanco);
+    padding-block: var(--e8);
+}
+
+.portada h1 { color: var(--blanco); }
+.portada p  { color: #D8E2F7; }
+
+.pie {
+    background: var(--marca-900);
+    color: #C3D0E8;
+    padding-block: var(--e6);
+    font-size: var(--t-sm);
+    margin-top: var(--e8);
+}
+
+.pie a { color: var(--blanco); }
+
+
+/* 6. BOTONES ================================================================ */
+
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--e2);
+    padding: var(--e3) var(--e5);
+    border: 1px solid transparent;
+    border-radius: var(--radio-sm);
+    font-family: var(--fuente-texto);
+    font-size: var(--t-md);
+    font-weight: var(--peso-medio);
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--transicion), border-color var(--transicion);
+    min-height: 44px;   /* área táctil mínima */
+}
+
+.boton--primario {
+    background: var(--marca-700);
+    color: var(--blanco);
+}
+.boton--primario:hover { background: var(--marca-500); color: var(--blanco); }
+
+.boton--secundario {
+    background: var(--blanco);
+    color: var(--marca-700);
+    border-color: var(--borde-fuerte);
+}
+.boton--secundario:hover { background: var(--marca-100); }
+
+.boton--acento {
+    background: var(--acento);
+    color: var(--blanco);
+}
+.boton--acento:hover { background: #A83A12; color: var(--blanco); }
+
+.boton--peligro {
+    background: var(--blanco);
+    color: var(--error);
+    border-color: var(--error);
+}
+.boton--peligro:hover { background: var(--error-fondo); }
+
+.boton--fantasma {
+    background: transparent;
+    color: var(--marca-700);
+}
+.boton--fantasma:hover { background: var(--marca-100); }
+
+.boton--pequeno { padding: var(--e2) var(--e3); font-size: var(--t-sm); min-height: 36px; }
+.boton--bloque  { width: 100%; }
+
+.boton:disabled, .boton[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* 7. FORMULARIOS ============================================================ */
+
+.formulario { max-width: 560px; }
+
+.campo { margin-bottom: var(--e5); }
+
+.campo__etiqueta {
+    display: block;
+    margin-bottom: var(--e2);
+    font-size: var(--t-sm);
+    font-weight: var(--peso-fuerte);
+    color: var(--tinta);
+}
+
+.campo__requerido { color: var(--error); }
+
+.campo__control {
+    display: block;
+    width: 100%;
+    padding: var(--e3);
+    border: 1px solid var(--borde-fuerte);
+    border-radius: var(--radio-sm);
+    background: var(--blanco);
+    color: var(--texto);
+    transition: border-color var(--transicion), box-shadow var(--transicion);
+}
+
+.campo__control:hover { border-color: var(--marca-500); }
+
+.campo__control::placeholder { color: #8395AD; }
+
+textarea.campo__control { min-height: 120px; resize: vertical; }
+
+.campo__ayuda {
+    display: block;
+    margin-top: var(--e1);
+    font-size: var(--t-sm);
+    color: var(--texto-suave);
+}
+
+.campo__error {
+    display: block;
+    margin-top: var(--e1);
+    font-size: var(--t-sm);
+    font-weight: var(--peso-medio);
+    color: var(--error);
+}
+
+.campo--invalido .campo__control {
+    border-color: var(--error);
+    background: var(--error-fondo);
+}
+
+.opcion {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+    margin-bottom: var(--e2);
+    font-size: var(--t-md);
+}
+
+.opcion input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--marca-700); }
+
+.grupo-campos {
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+    background: var(--blanco);
+    padding: var(--e5);
+    margin-bottom: var(--e5);
+}
+
+.grupo-campos__titulo {
+    font-family: var(--fuente-titulo);
+    font-weight: var(--peso-fuerte);
+    color: var(--marca-700);
+    padding-inline: var(--e2);
+}
+
+
+/* 8. TARJETAS =============================================================== */
+
+.tarjeta {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+    box-shadow: var(--sombra-1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow var(--transicion), border-color var(--transicion);
+}
+
+a.tarjeta { text-decoration: none; color: inherit; }
+a.tarjeta:hover { box-shadow: var(--sombra-3); border-color: var(--area); }
+
+.tarjeta__medio {
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    width: 100%;
+    background: var(--marca-100);
+}
+
+.tarjeta__cuerpo { padding: var(--e4); flex: 1; }
+.tarjeta__cuerpo p { margin-bottom: var(--e2); }
+
+.tarjeta__titulo {
+    font-size: var(--t-lg);
+    margin-bottom: var(--e1);
+}
+
+.tarjeta__pie {
+    padding: var(--e3) var(--e4);
+    border-top: 1px solid var(--borde);
+    background: var(--superficie);
+    font-size: var(--t-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--e2);
+}
+
+/* Franja superior con el color del área */
+.tarjeta--area { border-top: 3px solid var(--area); }
+
+.panel {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+    padding: var(--e5);
+    box-shadow: var(--sombra-1);
+}
+
+
+/* 9. INSIGNIAS DE ESTADO ====================================================
+   Todo módulo tiene un proceso con estados. Se representan siempre con esta
+   insignia, no con color de texto suelto ni con iconos propios.
+   -------------------------------------------------------------------------- */
+
+.insignia {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    padding: 0.15rem var(--e3);
+    border-radius: var(--radio-pastilla);
+    font-size: var(--t-xs);
+    font-weight: var(--peso-fuerte);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.insignia--borrador  { background: #EEF1F6; color: var(--texto-suave); border-color: var(--borde); }
+.insignia--revision  { background: var(--alerta-fondo); color: var(--alerta); border-color: #EAD2A4; }
+.insignia--publicado { background: var(--exito-fondo);  color: var(--exito);  border-color: #B9E2C6; }
+.insignia--rechazado { background: var(--error-fondo);  color: var(--error);  border-color: #EFC4C0; }
+.insignia--archivado { background: #EEF1F6; color: #6B7A91; border-color: var(--borde); }
+.insignia--info      { background: var(--info-fondo);   color: var(--info);   border-color: #C3D3F8; }
+
+/* Chip de filtro */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    padding: var(--e1) var(--e3);
+    border-radius: var(--radio-pastilla);
+    border: 1px solid var(--borde-fuerte);
+    background: var(--blanco);
+    font-size: var(--t-sm);
+    cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+    background: var(--area);
+    border-color: var(--area);
+    color: var(--blanco);
+}
+
+
+/* 10. TABLAS ================================================================
+   En pantallas angostas la tabla se desplaza dentro de su contenedor; la
+   página nunca se desplaza en horizontal.
+   -------------------------------------------------------------------------- */
+
+.tabla-envoltura {
+    overflow-x: auto;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+    background: var(--blanco);
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--t-sm);
+    min-width: 520px;
+}
+
+.tabla caption {
+    text-align: left;
+    padding: var(--e3) var(--e4);
+    font-weight: var(--peso-fuerte);
+    color: var(--tinta);
+}
+
+.tabla th {
+    text-align: left;
+    padding: var(--e3) var(--e4);
+    background: var(--marca-900);
+    color: var(--blanco);
+    font-weight: var(--peso-medio);
+    white-space: nowrap;
+}
+
+.tabla td {
+    padding: var(--e3) var(--e4);
+    border-bottom: 1px solid var(--borde);
+    vertical-align: middle;
+}
+
+.tabla tbody tr:nth-child(even) { background: var(--superficie); }
+.tabla tbody tr:hover { background: var(--marca-100); }
+.tabla tbody tr:last-child td { border-bottom: none; }
+
+.tabla__acciones { display: flex; gap: var(--e2); white-space: nowrap; }
+
+
+/* 11. ALERTAS ===============================================================
+   Mensaje que el servidor deja tras una operación (patrón POST-Redirect-GET).
+   -------------------------------------------------------------------------- */
+
+.alerta {
+    display: flex;
+    gap: var(--e3);
+    padding: var(--e4);
+    border: 1px solid;
+    border-left-width: 4px;
+    border-radius: var(--radio-sm);
+    margin-bottom: var(--e5);
+}
+
+.alerta p { margin: 0; max-width: none; }
+.alerta__titulo { font-weight: var(--peso-fuerte); }
+
+.alerta--exito  { background: var(--exito-fondo);  border-color: var(--exito);  color: #0D5227; }
+.alerta--alerta { background: var(--alerta-fondo); border-color: var(--alerta); color: #6B3F00; }
+.alerta--error  { background: var(--error-fondo);  border-color: var(--error);  color: #7E1A15; }
+.alerta--info   { background: var(--info-fondo);   border-color: var(--info);   color: #13368F; }
+
+
+/* 12. PAGINACIÓN Y MIGAS DE PAN ============================================= */
+
+.paginacion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e1);
+    list-style: none;
+    padding: 0;
+    margin: var(--e5) 0 0 0;
+}
+
+.paginacion a, .paginacion span {
+    display: grid;
+    place-items: center;
+    min-width: 40px;
+    height: 40px;
+    padding-inline: var(--e2);
+    border: 1px solid var(--borde-fuerte);
+    border-radius: var(--radio-sm);
+    background: var(--blanco);
+    text-decoration: none;
+    font-size: var(--t-sm);
+}
+
+.paginacion a:hover { background: var(--marca-100); }
+
+.paginacion [aria-current="page"] {
+    background: var(--marca-700);
+    border-color: var(--marca-700);
+    color: var(--blanco);
+    font-weight: var(--peso-fuerte);
+}
+
+.migas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e2);
+    list-style: none;
+    padding: 0;
+    margin-bottom: var(--e4);
+    font-size: var(--t-sm);
+    color: var(--texto-suave);
+}
+
+.migas li + li::before { content: "/"; margin-right: var(--e2); color: var(--borde-fuerte); }
+
+
+/* 13. ESTADO VACÍO ==========================================================
+   Lo que se muestra cuando una consulta no devuelve registros. Toda pantalla
+   de listado debe resolverlo; una tabla vacía sin mensaje se considera
+   pantalla incompleta.
+   -------------------------------------------------------------------------- */
+
+.vacio {
+    text-align: center;
+    padding: var(--e7) var(--e4);
+    background: var(--blanco);
+    border: 1px dashed var(--borde-fuerte);
+    border-radius: var(--radio-md);
+}
+
+.vacio h3 { color: var(--texto-suave); }
+.vacio p  { margin-inline: auto; }
+
+
+/* 14. UTILIDADES MÍNIMAS ====================================================
+   Son las únicas utilidades del sistema. No se agregan más: lo demás se
+   resuelve con clases de componente en la hoja del módulo.
+   -------------------------------------------------------------------------- */
+
+.centrado      { text-align: center; }
+.sin-margen    { margin: 0; }
+.mt-4          { margin-top: var(--e4); }
+.mb-4          { margin-bottom: var(--e4); }
+.mt-6          { margin-top: var(--e6); }
+.mb-6          { margin-bottom: var(--e6); }
+.ancho-lectura { max-width: var(--ancho-lectura); }
+
+
+/* 15. ACCESIBILIDAD ========================================================= */
+
+:focus-visible {
+    outline: 3px solid var(--marca-500);
+    outline-offset: 2px;
+    border-radius: var(--radio-sm);
+}
+
+.salto-contenido {
+    position: absolute;
+    left: -9999px;
+    background: var(--marca-700);
+    color: var(--blanco);
+    padding: var(--e3) var(--e4);
+    z-index: 100;
+}
+
+.salto-contenido:focus {
+    left: var(--e4);
+    top: var(--e2);
+}
+
+/* Texto solo para lectores de pantalla */
+.solo-lectores {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media print {
+    .encabezado, .menu, .paginacion, .boton { display: none !important; }
+    body { background: #fff; }
+}
+
+
+/* ============================================================================
+   16. PORTADA PÚBLICA Y ACCESOS        (añadido en la versión 1.1)
+   Componentes de la página de inicio de la plataforma. Un módulo no necesita
+   usarlos, pero están disponibles si su pantalla principal los requiere.
+   ========================================================================== */
+
+/* 16.1 Portada con imagen de fondo
+   La imagen se declara en la propia página con la variable --portada-imagen:
+       <section class="portada portada--imagen"
+                style="--portada-imagen:url('img/campus.jpg')">
+   Si la variable no existe, queda el degradado y la portada sigue funcionando. */
+
+.portada--imagen {
+    position: relative;
+    background-image:
+        linear-gradient(135deg, rgba(16,32,74,0.92), rgba(26,63,160,0.80)),
+        var(--portada-imagen, none);
+    background-size: cover;
+    background-position: center;
+    padding-block: var(--e8);
+}
+
+.portada__contenido { max-width: 46rem; }
+
+.portada h1 { font-size: clamp(2rem, 5vw, 3rem); }
+
+.portada__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e3);
+    margin-top: var(--e5);
+}
+
+/* Cifras de la portada */
+.cifras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e6);
+    margin-top: var(--e6);
+    padding-top: var(--e5);
+    border-top: 1px solid rgba(255,255,255,0.25);
+}
+
+.cifra__numero {
+    display: block;
+    font-family: var(--fuente-titulo);
+    font-size: var(--t-2xl);
+    font-weight: var(--peso-fuerte);
+    color: var(--blanco);
+    line-height: 1.1;
+}
+
+.cifra__texto { font-size: var(--t-sm); color: #C3D0E8; }
+
+
+/* 16.2 Accesos a los módulos
+   Tarjeta grande con distintivo de color. Sirve mientras no hay fotografía:
+   el distintivo ocupa el lugar de la imagen y la tarjeta no se ve rota. */
+
+.accesos {
+    display: grid;
+    gap: var(--e4);
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.acceso {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e4);
+    padding: var(--e4);
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-left: 4px solid var(--area);
+    border-radius: var(--radio-md);
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--sombra-1);
+    transition: box-shadow var(--transicion), transform var(--transicion);
+}
+
+.acceso:hover {
+    box-shadow: var(--sombra-3);
+    transform: translateY(-2px);
+    color: inherit;
+}
+
+.acceso--inactivo {
+    opacity: 0.55;
+    pointer-events: none;
+    border-left-color: var(--borde-fuerte);
+}
+
+.acceso__distintivo {
+    flex: 0 0 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radio-sm);
+    background: var(--area-suave);
+    color: var(--area);
+    font-family: var(--fuente-titulo);
+    font-weight: var(--peso-fuerte);
+    font-size: var(--t-sm);
+    letter-spacing: 0.02em;
+}
+
+.acceso__titulo {
+    display: block;
+    font-family: var(--fuente-titulo);
+    font-weight: var(--peso-fuerte);
+    color: var(--tinta);
+    margin-bottom: 2px;
+}
+
+.acceso__texto { display: block; font-size: var(--t-sm); color: var(--texto-suave); line-height: 1.45; }
+
+
+/* 16.3 Menú con grupos desplegables
+   Se resuelve con <details> y <summary>: funciona con teclado y sin
+   JavaScript. En pantalla angosta el grupo se despliega en bloque. */
+
+.menu__grupo { position: relative; }
+
+.menu__grupo > summary {
+    display: block;
+    padding: var(--e2) var(--e3);
+    border-radius: var(--radio-sm);
+    font-size: var(--t-sm);
+    font-weight: var(--peso-medio);
+    color: var(--texto);
+    cursor: pointer;
+    list-style: none;
+    white-space: nowrap;
+}
+
+.menu__grupo > summary::-webkit-details-marker { display: none; }
+.menu__grupo > summary::after { content: " ▾"; color: var(--texto-suave); }
+.menu__grupo > summary:hover { background: var(--superficie); color: var(--marca-700); }
+
+.menu__lista {
+    list-style: none;
+    margin: 0;
+    padding: var(--e2);
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+    box-shadow: var(--sombra-2);
+    min-width: 220px;
+}
+
+@media (min-width: 860px) {
+    .menu__lista { position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; }
+}
+
+@media (max-width: 859px) {
+    .encabezado { position: static; }
+    .encabezado__barra { flex-wrap: wrap; align-items: flex-start; padding-block: var(--e3); }
+    .encabezado__barra > nav { width: 100%; }
+    .menu { flex-direction: column; width: 100%; gap: 0; }
+    .menu__grupo { width: 100%; }
+    .menu__lista { box-shadow: none; border: none; padding-left: var(--e4); }
+}
