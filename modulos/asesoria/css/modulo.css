@@ -1,19 +1,19 @@
 /* ============================================================================
-   MÓDULO PLANTILLA · modulo.css
+   MÓDULO ASE · Estilos propios complementarios a ev-base.css
    Explorador Vocacional UTBB
 
-   Esta hoja es TUYA. Aquí va únicamente lo que el sistema de diseño no
-   resuelve: una pieza propia de tu módulo, como el reproductor de escenas
-   del recorrido virtual o la barra de avance del test vocacional.
-
-   ANTES DE ESCRIBIR AQUÍ, REVISA LA GUÍA VISUAL. Si el componente ya existe,
-   se usa; no se vuelve a escribir.
-
-   Reglas
-     · Se usan las variables del núcleo: var(--marca-700), var(--e4)...
-       Un valor hexadecimal escrito a mano en este archivo es un error.
-     · No se redefine nada de ev-base.css. Si algo del sistema no te sirve,
-       se plantea en clase; no se parcha por módulo.
-     · Los nombres de clase llevan el prefijo del módulo para no chocar con
-       los de otro equipo al integrar: .plt-escena, .plt-avance
+   Respeta el ancho móvil de 375 px sin generar desplazamiento horizontal.
    ========================================================================= */
+
+.ase-mensaje--orientador {
+    border-left: 4px solid var(--color-primario, #0f4c81);
+}
+
+.ase-mensaje--aspirante {
+    border-left: 4px solid var(--color-borde, #cbd5e1);
+}
+
+.ase-adjuntos ul {
+    margin: 0.25rem 0 0 1.25rem;
+    padding: 0;
+}
