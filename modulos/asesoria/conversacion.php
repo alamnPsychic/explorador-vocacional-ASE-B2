@@ -48,8 +48,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         redirigir('conversacion.php?id=' . $id);
     }
+
+if ($accion === 'responder') {
+        $cuerpoRespuesta = trim(post('cuerpo'));
+
+        if ($cuerpoRespuesta === '') {
+            $errores['cuerpo'] = 'Escribe un mensaje antes de enviar.';
+        }
+
+        $archivoGuardado = null;
+        if (!$errores && !empty($_FILES['adjunto']['name'])) {
+            try {
+                $archivoGuardado = ase_procesar_adjunto_subido($_FILES['adjunto']);
+            } catch (RuntimeException $e) {
+                $errores['adjunto'] = $e->getMessage();
+            }
+        }
+
+        if (!$errores) {
+            ase_mensaje_agregar(
+                $id,
+                (int)$usuarioActual['id'],
+                $cuerpoRespuesta,
+                $esPersonal,
+                $archivoGuardado
+            );
+            mensaje('exito', 'Tu mensaje fue agregado a la conversación.');
+            redirigir('conversacion.php?id=' . $id);
+        }
+    }
 }
-}
+
 $mensajes = ase_mensajes_listar($id);
 
 cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
