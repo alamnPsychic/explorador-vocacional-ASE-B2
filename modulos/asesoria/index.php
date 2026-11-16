@@ -115,3 +115,37 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
         <p class="centrado mt-4 sin-margen"><a href="?">Ver todas las preguntas</a></p>
       <?php endif; ?>
     </form>
+
+    <!-- Listado de preguntas frecuentes -->
+    <div>
+      <p class="leyenda">
+        <?= count($faqs) ?> pregunta<?= count($faqs) === 1 ? '' : 's' ?> frecuente<?= count($faqs) === 1 ? '' : 's' ?>
+      </p>
+
+      <?php if (!$faqs): ?>
+        <div class="vacio">
+          <h3>No encontramos preguntas frecuentes con esos filtros</h3>
+          <p class="ancho-lectura">Prueba con otros términos o envíanos directamente tu pregunta en el formulario inferior.</p>
+          <a class="boton boton--secundario" href="?">Quitar filtros</a>
+        </div>
+      <?php else: ?>
+        <div class="ase-lista-faq">
+          <?php foreach ($faqs as $f): ?>
+            <article class="panel mb-4">
+              <div class="fila fila--separada mb-2">
+                <span class="insignia insignia--publicado"><?= e($f['categoria_nombre']) ?></span>
+                <span class="leyenda sin-margen">
+                  <?= $f['carrera_nombre'] ? e($f['carrera_nombre']) : 'General UTBB' ?>
+                </span>
+              </div>
+              <h3 class="mt-2 mb-2"><?= e($f['pregunta']) ?></h3>
+              <p class="sin-margen"><?= nl2br(e($f['respuesta'])) ?></p>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+    </div>
+
+  </div>
+
+  <hr class="mt-6 mb-6">
