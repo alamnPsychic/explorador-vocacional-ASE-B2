@@ -105,3 +105,41 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
       <?php endif; ?>
     </div>
   </div>
+  <!-- Hilo de mensajes -->
+  <h2>Historial de mensajes (<?= count($mensajes) ?>)</h2>
+
+  <div class="ase-hilo mb-6">
+    <?php foreach ($mensajes as $m): ?>
+      <article class="panel mb-4 <?= (int)$m['es_orientador'] === 1 ? 'ase-mensaje--orientador' : 'ase-mensaje--aspirante' ?>">
+        <div class="fila fila--separada mb-2">
+          <strong>
+            <?= e($m['autor_nombre']) ?>
+            <?php if ((int)$m['es_orientador'] === 1): ?>
+              <span class="insignia insignia--publicado">Orientador UTBB</span>
+            <?php else: ?>
+              <span class="insignia insignia--borrador">Aspirante</span>
+            <?php endif; ?>
+          </strong>
+          <span class="leyenda sin-margen"><?= e(date('d/m/Y H:i', strtotime($m['creado_en']))) ?></span>
+        </div>
+
+        <p class="mb-2"><?= nl2br(e($m['cuerpo'])) ?></p>
+
+        <?php if (!empty($m['adjuntos'])): ?>
+          <div class="ase-adjuntos mt-2">
+            <small class="leyenda">Archivos adjuntos:</small>
+            <ul>
+              <?php foreach ($m['adjuntos'] as $adj): ?>
+                <li>
+                  <a href="descargar.php?id=<?= (int)$adj['id'] ?>">
+                    Descargar: <?= e($adj['nombre_original']) ?>
+                  </a>
+                  <small class="leyenda">(<?= round((int)$adj['tamano'] / 1024, 1) ?> KB)</small>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
+        <?php endif; ?>
+      </article>
+    <?php endforeach; ?>
+  </div>
