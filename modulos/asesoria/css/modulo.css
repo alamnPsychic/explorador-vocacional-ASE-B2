@@ -17,18 +17,3 @@
      · Los nombres de clase llevan el prefijo del módulo para no chocar con
        los de otro equipo al integrar: .plt-escena, .plt-avance
    ========================================================================= */
-
-
-/* Ejemplo de componente propio del módulo. Bórralo cuando no lo uses. */
-.plt-avance {
-    height: 8px;
-    background: var(--marca-100);
-    border-radius: var(--radio-pastilla);
-    overflow: hidden;
-}
-
-.plt-avance__barra {
-    height: 100%;
-    background: var(--area);
-    transition: width var(--transicion);
-}
