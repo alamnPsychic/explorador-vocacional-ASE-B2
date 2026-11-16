@@ -149,3 +149,60 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
   </div>
 
   <hr class="mt-6 mb-6">
+  <!-- =====================================================================
+       2. SEGUIMIENTO DE MIS CONVERSACIONES
+       ===================================================================== -->
+  <h2 id="mis-consultas">Mis conversaciones de asesoría</h2>
+
+  <?php if (!hay_sesion()): ?>
+    <div class="panel mb-6">
+      <p class="sin-margen">
+        Para dar seguimiento a tus consultas o enviar una duda personalizada a un orientador,
+        <a href="<?= RUTA_BASE ?>/auth/entrar.php"><strong>inicia sesión con tu cuenta de aspirante</strong></a>.
+      </p>
+    </div>
+  <?php else: ?>
+    <?php if (!$misConversaciones): ?>
+      <div class="vacio mb-6">
+        <h3>Aún no tienes conversaciones registradas</h3>
+        <p class="ancho-lectura">Usa el formulario de abajo para enviar tu primera consulta al equipo de orientación.</p>
+      </div>
+    <?php else: ?>
+      <div class="tabla-envoltura mb-6">
+        <table class="tabla">
+          <caption>Historial de tus consultas</caption>
+          <thead>
+            <tr>
+              <th scope="col">Asunto</th>
+              <th scope="col">Categoría</th>
+              <th scope="col">Carrera</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Última actividad</th>
+              <th scope="col">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($misConversaciones as $cv): ?>
+              <tr>
+                <td><strong><?= e($cv['asunto']) ?></strong></td>
+                <td><?= e($cv['categoria_nombre']) ?></td>
+                <td><?= e($cv['carrera_nombre'] ?? 'General') ?></td>
+                <td>
+                  <span class="<?= e(ase_clase_estado($cv['estado'])) ?>">
+                    <?= e(ASE_ESTADOS[$cv['estado']]) ?>
+                  </span>
+                </td>
+                <td><?= e(date('d/m/Y H:i', strtotime($cv['actualizado_en']))) ?></td>
+                <td>
+                  <a class="boton boton--secundario boton--pequeno"
+                     href="conversacion.php?id=<?= (int)$cv['id'] ?>">
+                    Ver seguimiento (<?= (int)$cv['total_mensajes'] ?>)
+                  </a>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    <?php endif; ?>
+  <?php endif; ?>
