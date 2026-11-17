@@ -152,6 +152,7 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
           <span class="leyenda sin-margen"><?= e(date('d/m/Y H:i', strtotime($m['creado_en']))) ?></span>
         </div>
 
+
         <p class="mb-2"><?= nl2br(e($m['cuerpo'])) ?></p>
 
         <?php if (!empty($m['adjuntos'])): ?>
@@ -172,3 +173,50 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
       </article>
     <?php endforeach; ?>
   </div>
+
+  <!-- Formulario para enviar seguimiento (o reabrir automáticamente al responder) -->
+  <div class="panel">
+    <h3><?= $conversacion['estado'] === 'cerrada' ? 'Enviar un nuevo mensaje y reabrir la consulta' : 'Agregar respuesta o seguimiento' ?></h3>
+
+    <?php if ($errores): ?>
+      <div class="alerta alerta--error" role="alert">
+        <p><span class="alerta__titulo">No se pudo enviar el mensaje.</span> Corrige los campos señalados.</p>
+      </div>
+    <?php endif; ?>
+
+    <form class="formulario" method="POST" action="" enctype="multipart/form-data">
+      <?= campo_token() ?>
+      <input type="hidden" name="accion" value="responder">
+
+      <div class="campo <?= isset($errores['cuerpo']) ? 'campo--invalido' : '' ?>">
+        <label class="campo__etiqueta" for="cuerpo">
+          Tu mensaje <span class="campo__requerido" aria-hidden="true">*</span>
+        </label>
+        <textarea class="campo__control" id="cuerpo" name="cuerpo" rows="4" required
+                  placeholder="Escribe tu respuesta o información adicional..."><?= e($cuerpoRespuesta) ?></textarea>
+        <?php if (isset($errores['cuerpo'])): ?>
+          <small class="campo__error"><?= e($errores['cuerpo']) ?></small>
+        <?php endif; ?>
+      </div>
+
+      <div class="campo <?= isset($errores['adjunto']) ? 'campo--invalido' : '' ?>">
+        <label class="campo__etiqueta" for="adjunto">Adjuntar archivo (opcional)</label>
+        <input class="campo__control" type="file" id="adjunto" name="adjunto"
+               accept="application/pdf,image/jpeg,image/png,image/webp">
+        <small class="campo__ayuda">PDF, JPG, PNG o WebP. Máximo 5 MB.</small>
+        <?php if (isset($errores['adjunto'])): ?>
+          <small class="campo__error"><?= e($errores['adjunto']) ?></small>
+        <?php endif; ?>
+      </div>
+
+      <div class="fila">
+        <button class="boton boton--primario" type="submit">Enviar mensaje</button>
+        <a class="boton boton--secundario" href="index.php">Volver al inicio de asesoría</a>
+      </div>
+    </form>
+  </div>
+
+</section>
+
+<?php
+pie();
