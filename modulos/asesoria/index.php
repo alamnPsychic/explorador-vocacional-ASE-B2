@@ -309,3 +309,47 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
               <small class="campo__error"><?= e($errores['carrera_id']) ?></small>
             <?php endif; ?>
           </div>
+
+          <div class="campo <?= isset($errores['asunto']) ? 'campo--invalido' : '' ?>">
+            <label class="campo__etiqueta" for="asunto">
+              Asunto <span class="campo__requerido" aria-hidden="true">*</span>
+            </label>
+            <input class="campo__control" type="text" id="asunto" name="asunto"
+                   value="<?= e($datosConsulta['asunto']) ?>" maxlength="200"
+                   placeholder="Ej. Requisito de certificado para Médico Cirujano" required>
+            <?php if (isset($errores['asunto'])): ?>
+              <small class="campo__error"><?= e($errores['asunto']) ?></small>
+            <?php endif; ?>
+          </div>
+
+          <div class="campo <?= isset($errores['cuerpo']) ? 'campo--invalido' : '' ?>">
+            <label class="campo__etiqueta" for="cuerpo">
+              Mensaje detallado <span class="campo__requerido" aria-hidden="true">*</span>
+            </label>
+            <textarea class="campo__control" id="cuerpo" name="cuerpo" rows="5" required
+                      placeholder="Explica tu duda con detalle para que el orientador pueda ayudarte..."><?= e($datosConsulta['cuerpo']) ?></textarea>
+            <?php if (isset($errores['cuerpo'])): ?>
+              <small class="campo__error"><?= e($errores['cuerpo']) ?></small>
+            <?php endif; ?>
+          </div>
+
+          <div class="campo <?= isset($errores['adjunto']) ? 'campo--invalido' : '' ?>">
+            <label class="campo__etiqueta" for="adjunto">Archivo adjunto (opcional)</label>
+            <input class="campo__control" type="file" id="adjunto" name="adjunto"
+                   accept="application/pdf,image/jpeg,image/png,image/webp">
+            <small class="campo__ayuda">Formatos aceptados: PDF, JPG, PNG o WebP. Máximo 5 MB.</small>
+            <?php if (isset($errores['adjunto'])): ?>
+              <small class="campo__error"><?= e($errores['adjunto']) ?></small>
+            <?php endif; ?>
+          </div>
+        </fieldset>
+
+        <button class="boton boton--primario" type="submit">Enviar consulta</button>
+      </form>
+    <?php endif; ?>
+  </div>
+
+</section>
+
+<?php
+pie();
