@@ -249,3 +249,63 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
       </div>
     <?php endif; ?>
   <?php endif; ?>
+
+  <!-- =====================================================================
+       3. FORMULARIO DE NUEVA CONSULTA
+       ===================================================================== -->
+  <div id="nueva-consulta" class="mt-6">
+    <h2>Nueva consulta a orientación</h2>
+
+    <?php if (!hay_sesion()): ?>
+      <div class="alerta alerta--info">
+        <p class="sin-margen">
+          Debes iniciar sesión para abrir una consulta.
+          <a href="<?= RUTA_BASE ?>/auth/entrar.php">Haz clic aquí para entrar</a> (cuenta de prueba: <code>aspirante@ejemplo.mx</code> / <code>Demo1234</code>).
+        </p>
+      </div>
+    <?php else: ?>
+
+      <?php if ($errores): ?>
+        <div class="alerta alerta--error" role="alert">
+          <p><span class="alerta__titulo">Revisa tu consulta.</span>
+             Hay <?= count($errores) ?> campo<?= count($errores) === 1 ? '' : 's' ?> por corregir.</p>
+        </div>
+      <?php endif; ?>
+
+      <form class="formulario" method="POST" action="#nueva-consulta" enctype="multipart/form-data">
+        <?= campo_token() ?>
+
+        <fieldset class="grupo-campos">
+          <legend class="grupo-campos__titulo">Escribe tu duda</legend>
+
+          <div class="campo <?= isset($errores['categoria_id']) ? 'campo--invalido' : '' ?>">
+            <label class="campo__etiqueta" for="categoria_id">
+              Categoría del tema <span class="campo__requerido" aria-hidden="true">*</span>
+            </label>
+            <select class="campo__control" id="categoria_id" name="categoria_id" required>
+              <option value="">Selecciona una categoría</option>
+              <?php foreach ($categorias as $cat): ?>
+                <option value="<?= (int)$cat['id'] ?>" <?= (int)$datosConsulta['categoria_id'] === (int)$cat['id'] ? 'selected' : '' ?>>
+                  <?= e($cat['nombre']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <?php if (isset($errores['categoria_id'])): ?>
+              <small class="campo__error"><?= e($errores['categoria_id']) ?></small>
+            <?php endif; ?>
+          </div>
+
+          <div class="campo <?= isset($errores['carrera_id']) ? 'campo--invalido' : '' ?>">
+            <label class="campo__etiqueta" for="carrera_id">Carrera de interés (opcional)</label>
+            <select class="campo__control" id="carrera_id" name="carrera_id">
+              <option value="">Duda general de la universidad</option>
+              <?php foreach (carreras() as $c): ?>
+                <option value="<?= (int)$c['id'] ?>" <?= (int)$datosConsulta['carrera_id'] === (int)$c['id'] ? 'selected' : '' ?>>
+                  <?= e($c['nombre']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <?php if (isset($errores['carrera_id'])): ?>
+              <small class="campo__error"><?= e($errores['carrera_id']) ?></small>
+            <?php endif; ?>
+          </div>
