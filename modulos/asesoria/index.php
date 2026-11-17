@@ -29,6 +29,49 @@ $datosConsulta = [
     'cuerpo'       => '',
 ];
 $errores = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requerir_sesion();
+    verificar_token();
+
+    $datosConsulta['categoria_id'] = entero(post('categoria_id'));
+    $datosConsulta['carrera_id']   = entero(post('carrera_id'));
+    $datosConsulta['asunto']       = trim(post('asunto'));
+    $datosConsulta['cuerpo']       = trim(post('cuerpo'));
+
+    // Validación en el servidor
+    if ($datosConsulta['categoria_id'] === null || ase_categoria_obtener($datosConsulta['categoria_id']) === null) {
+        $errores['categoria_id'] = 'Selecciona una categoría válida.';
+    }
+
+    if ($datosConsulta['carrera_id'] !== null && carrera($datosConsulta['carrera_id']) === null) {
+        $errores['carrera_id'] = 'La carrera seleccionada no es válida.';
+    }
+
+    if ($datosConsulta['asunto'] === '') {
+        $errores['asunto'] = 'Escribe el asunto de tu consulta.';
+    } elseif (mb_strlen($datosConsulta['asunto']) > 200) {
+        $errores['asunto'] = 'El asunto no puede exceder los 200 caracteres.';
+    }
+
+    if ($datosConsulta['cuerpo'] === '') {
+        $errores['cuerpo'] = 'Describe tu duda en el mensaje.';
+    }
+
+    $archivoGuardado = null;
+    if (!$errores && !empty($_FILES['adjunto']['name'])) {
+        try {
+            $archivoGuardado = ase_procesar_adjunto_subido($_FILES['adjunto']);
+        } catch (RuntimeException $e) {
+            $errores['adjunto'] = $e->getMessage();
+        }
+    }
+
+    if (!$errores) {
+        $nuevaId = ase_conversacion_crear($datosConsulta, (int)usuario()['id'], $archivoGuardado);
+        mensaje('exito', 'Tu consulta fue enviada. Un orientador te responderá pronto.');
+        redirigir('conversacion.php?id=' . $nuevaId);
+    }
+}
 
 $categorias = ase_categorias_listar(true);
 $faqs       = ase_faq_listar($busqueda, $categoriaId, $carreraId, true);
