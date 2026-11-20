@@ -12,11 +12,16 @@ Canal de consulta asincrónica entre los aspirantes de la Universidad Tecnológi
 
 | Pantalla | Archivo | Quién entra |
 |---|---|---|
-| Listado público | `index.php` | Cualquiera |
-| Detalle | `ficha.php?id=` | Cualquiera |
-| Panel | `admin/index.php` | <rol> |
-| Alta y edición | `admin/editar.php` | <rol> |
-| Baja | `admin/eliminar.php` | <rol> |
+| Preguntas frecuentes y formulario de consulta | `index.php` | Consulta pública. Solo el aspirante puede enviar una consulta |
+| Seguimiento de una conversación | `conversacion.php?id=ID` | Aspirante titular y personal de orientación con acceso |
+| Descarga de un adjunto | `descargar.php?id=ID` | Aspirante titular y personal de orientación con acceso |
+| Bandeja de orientación | `admin/index.php` | Editor y coordinación |
+| Hilo, respuesta y cambio de estado | `admin/conversacion.php?id=ID` | Editor y coordinación, según la carrera |
+| Listado, filtros y baja de preguntas frecuentes | `admin/faq.php` | Coordinación |
+| Alta, edición y conversión de una respuesta | `admin/faq_form.php` (alta), `?id=ID` (edición), `?mensaje=ID` (conversión) | Coordinación |
+| Listado, alta, edición y baja de categorías | `admin/categorias.php` (listado), `?nueva=1` (alta), `?id=ID` (edición y baja) | Coordinación |
+
+Coordinación entra desde el panel general de la plataforma. El enlace de la página pública de Asesoría lleva a la bandeja tanto a coordinación como a editores.
 
 ## Tablas
 
@@ -35,22 +40,28 @@ Referencias al núcleo: `usuarios`, `carreras`. Ninguna a otro módulo.
 | Rol | Qué puede hacer |
 |---|---|
 | `aspirante` | Buscar y filtrar preguntas frecuentes; abrir nuevas consultas con adjuntos; dar seguimiento a sus propias conversaciones; cerrar y reabrir sus hilos; descargar adjuntos de sus conversaciones. |
-| `editor` / `coordinacion` (Orientador) | Responder en los hilos de conversación, adjuntar archivos y descargar adjuntos permitidos *(gestión desde el panel administrativo pendiente de implementar)*. |
+| `editor` (Orientador de carrera) | Atiende las consultas de su carrera y las generales. En esas consultas puede responder, adjuntar, descargar y cambiar el estado. |
+| `coordinacion` (Orientador) | Atiende todas las consultas, administra las categorías y preguntas frecuentes, y convierte respuestas de orientación en preguntas frecuentes. |
+
+Una pregunta creada desde una respuesta conserva el vínculo al mensaje y empieza oculta. Coordinación puede editar el asunto y el texto para retirar detalles personales antes de marcarla como visible. Solo se muestran públicamente las preguntas marcadas como visibles con una categoría activa. Las categorías que tienen consultas o preguntas vinculadas se pueden desactivar.
 
 ## Proceso de estados
 
-```
-borrador → revision → publicado
-                   ↘ rechazado
-```
-
-Quién puede provocar cada cambio y con qué condiciones.
+- **Abierta.** Se crea al enviar una consulta o al reabrir una cerrada. Un seguimiento del aspirante también la devuelve a este estado.
+- **Respondida.** Se alcanza cuando orientación responde.
+- **Cerrada.** El titular u orientación pueden cerrar una consulta respondida. Ambos pueden reabrirla. Si el aspirante envía un seguimiento desde su hilo cerrado, el mensaje también reabre la consulta.
 
 ## Archivos que recibe
 
 | Qué | Tipos | Tamaño máximo | Quién lo descarga |
 |---|---|---|---|
 | Adjuntos en mensajes de consulta y respuesta | `image/jpeg` (`.jpg`), `image/png` (`.png`), `image/webp` (`.webp`), `application/pdf` (`.pdf`) | 5 MB | Únicamente el aspirante titular de la conversación y el personal de orientación autorizado (`coordinacion` o `editor` de la carrera asociada). |
+
+Los editores también pueden descargar adjuntos de consultas generales. Apache debe leer `uploads/.htaccess` para bloquear el acceso directo. Las descargas se sirven por `descargar.php` con verificación de permisos.
+
+## Dependencias y datos de prueba
+
+Se usa el núcleo compartido con PHP 8.x, PDO MySQL, `mbstring` y `fileinfo`. En una base local de prueba nueva, importa `sql/01-nucleo.sql`, ejecuta el generador del núcleo `herramientas/crear-usuarios.php` y luego importa `modulos/asesoria/esquema.sql`. Ese orden permite que los ejemplos de conversaciones usen los usuarios de prueba.
 
 ## Credenciales de prueba
 
@@ -60,13 +71,23 @@ Quién puede provocar cada cambio y con qué condiciones.
 | `med@utbb.mx` | `editor` — Médico Cirujano |
 | `coordinacion@utbb.mx` | `coordinacion` |
 
+El generador del núcleo configura `Demo1234` para estas cuentas locales.
+
 ## Plan de pruebas ejecutado
 
-| # | Qué se probó | Resultado |
-|---|---|---|
-| 1 | | |
+| Caso | Verificación local |
+|---|---|
+| Bandeja | Búsqueda por texto y filtros por estado y categoría |
+| Conversación | Respuesta con adjunto, cierre de una consulta respondida y reapertura |
+| Archivos | Envío por ambas partes, descarga con permisos y rechazo por tipo real o tamaño inválido |
+| Categorías | Alta, listado, edición, baja y bloqueo de la baja cuando existen referencias |
+| Preguntas frecuentes | Alta, listado, filtros, edición, baja y visibilidad pública |
+| Conversión | Creación desde una respuesta y reutilización del vínculo al intentar convertirla otra vez |
+| Acceso | Redirección sin sesión, rechazo del aspirante en admin, alcance del editor por carrera y rechazo de CSRF inválido |
+| Adaptación | Vistas de administración a 375 px en Chrome |
 
-## Pendientes conocidos
+La prueba se ejecutó con PHP 8.2 y MariaDB en una instancia local aislada. La publicación HTTPS pertenece a la fase de integración.
 
-Lo que no quedó y por qué. Es preferible declararlo a que aparezca en la
-prueba cruzada.
+## Asistencia de IA
+
+Se usó Codex para diseñar e implementar la bandeja, el hilo administrativo, la administración de categorías y preguntas frecuentes, los ajustes de permisos y el plan de verificación de este cambio.
