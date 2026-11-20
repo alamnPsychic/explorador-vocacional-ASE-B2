@@ -14,19 +14,23 @@ require_once __DIR__ . '/../../nucleo/comun.php';
 requerir_sesion();
 
 require_once __DIR__ . '/includes/consultas.php';
+require_once __DIR__ . '/includes/entrada.php';
+require_once __DIR__ . '/includes/hilo.php';
 
-$id = entero(get('id'));
+$id = entero(ase_entrada($_GET, 'id'));
 if ($id === null) {
     no_encontrado('Conversación no especificada.');
 }
 
 $usuarioActual = usuario();
-$esPersonal    = in_array(rol(), ['editor', 'coordinacion'], true);
+$esPersonal    = rol() === 'editor' || rol() === 'coordinacion';
 
 // Si es aspirante, se fuerza a que solo pueda cargar SU propia conversación
 $conversacion = ase_conversacion_obtener($id, $esPersonal ? null : (int)$usuarioActual['id']);
 
-if ($conversacion === null) {
+if ($conversacion === null || ($esPersonal && !ase_puede_atender_conversacion(
+    $conversacion['carrera_id'] === null ? null : (int)$conversacion['carrera_id']
+))) {
     no_encontrado('La conversación no existe o no tienes permiso para consultarla.');
 }
 
@@ -34,38 +38,50 @@ $errores = [];
 $cuerpoRespuesta = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verificar_token();
-    $accion = post('accion');
+    ase_verificar_token();
+    $accion = ase_entrada($_POST, 'accion');
 
     if ($accion === 'cambiar_estado') {
-        $nuevoEstado = post('nuevo_estado');
-        if (in_array($nuevoEstado, ['abierta', 'cerrada'], true)) {
-            ase_conversacion_cambiar_estado($id, $nuevoEstado);
-            $textoMsj = $nuevoEstado === 'cerrada'
-                ? 'Marcaste la conversación como cerrada.'
-                : 'La conversación fue reabierta.';
-            mensaje('exito', $textoMsj);
+        $nuevoEstado = ase_entrada($_POST, 'nuevo_estado');
+        if (!in_array($nuevoEstado, ['abierta', 'cerrada'], true)) {
+            http_response_code(400);
+            exit('Estado no válido.');
+        }
+        try {
+            if (ase_conversacion_cambiar_estado($id, $nuevoEstado)) {
+                mensaje('exito', $nuevoEstado === 'cerrada'
+                    ? 'Marcaste la conversación como cerrada.'
+                    : 'La conversación fue reabierta.');
+            } else {
+                mensaje('alerta', 'La consulta cambió de estado. Revisa su estado actual.');
+            }
+        } catch (PDOException $e) {
+            error_log('ASE: error al cambiar el estado de una consulta: ' . $e->getMessage());
+            mensaje('error', 'No se pudo cambiar el estado de la consulta.');
         }
         redirigir('conversacion.php?id=' . $id);
     }
 
-if ($accion === 'responder') {
-        $cuerpoRespuesta = trim(post('cuerpo'));
+    if ($accion !== 'responder') {
+        http_response_code(400);
+        exit('Acción no válida.');
+    }
+    $cuerpoRespuesta = ase_entrada($_POST, 'cuerpo');
+    if (!ase_texto_valido($cuerpoRespuesta, ASE_MAX_CUERPO)) {
+        $errores['cuerpo'] = 'Escribe un mensaje de hasta 16 000 caracteres.';
+    }
 
-        if ($cuerpoRespuesta === '') {
-            $errores['cuerpo'] = 'Escribe un mensaje antes de enviar.';
+    $archivoGuardado = null;
+    if (!$errores) {
+        try {
+            $archivoGuardado = ase_procesar_adjunto_subido($_FILES['adjunto'] ?? null);
+        } catch (RuntimeException $e) {
+            $errores['adjunto'] = $e->getMessage();
         }
+    }
 
-        $archivoGuardado = null;
-        if (!$errores && !empty($_FILES['adjunto']['name'])) {
-            try {
-                $archivoGuardado = ase_procesar_adjunto_subido($_FILES['adjunto']);
-            } catch (RuntimeException $e) {
-                $errores['adjunto'] = $e->getMessage();
-            }
-        }
-
-        if (!$errores) {
+    if (!$errores) {
+        try {
             ase_mensaje_agregar(
                 $id,
                 (int)$usuarioActual['id'],
@@ -75,6 +91,12 @@ if ($accion === 'responder') {
             );
             mensaje('exito', 'Tu mensaje fue agregado a la conversación.');
             redirigir('conversacion.php?id=' . $id);
+        } catch (DomainException $e) {
+            mensaje('alerta', $e->getMessage());
+            redirigir('conversacion.php?id=' . $id);
+        } catch (PDOException $e) {
+            error_log('ASE: error al enviar un mensaje: ' . $e->getMessage());
+            $errores['envio'] = 'No se pudo guardar el mensaje. Intenta de nuevo.';
         }
     }
 }
@@ -113,7 +135,7 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
     </div>
 
     <div class="fila mt-4">
-      <?php if ($conversacion['estado'] !== 'cerrada'): ?>
+      <?php if ($conversacion['estado'] === 'respondida'): ?>
         <form method="POST" action="">
           <?= campo_token() ?>
           <input type="hidden" name="accion" value="cambiar_estado">
@@ -122,7 +144,7 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
             Dar por resuelta y cerrar consulta
           </button>
         </form>
-      <?php else: ?>
+      <?php elseif ($conversacion['estado'] === 'cerrada'): ?>
         <form method="POST" action="">
           <?= campo_token() ?>
           <input type="hidden" name="accion" value="cambiar_estado">
@@ -134,53 +156,16 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
       <?php endif; ?>
     </div>
   </div>
-  <!-- Hilo de mensajes -->
-  <h2>Historial de mensajes (<?= count($mensajes) ?>)</h2>
-
-  <div class="ase-hilo mb-6">
-    <?php foreach ($mensajes as $m): ?>
-      <article class="panel mb-4 <?= (int)$m['es_orientador'] === 1 ? 'ase-mensaje--orientador' : 'ase-mensaje--aspirante' ?>">
-        <div class="fila fila--separada mb-2">
-          <strong>
-            <?= e($m['autor_nombre']) ?>
-            <?php if ((int)$m['es_orientador'] === 1): ?>
-              <span class="insignia insignia--publicado">Orientador UTBB</span>
-            <?php else: ?>
-              <span class="insignia insignia--borrador">Aspirante</span>
-            <?php endif; ?>
-          </strong>
-          <span class="leyenda sin-margen"><?= e(date('d/m/Y H:i', strtotime($m['creado_en']))) ?></span>
-        </div>
-
-
-        <p class="mb-2"><?= nl2br(e($m['cuerpo'])) ?></p>
-
-        <?php if (!empty($m['adjuntos'])): ?>
-          <div class="ase-adjuntos mt-2">
-            <small class="leyenda">Archivos adjuntos:</small>
-            <ul>
-              <?php foreach ($m['adjuntos'] as $adj): ?>
-                <li>
-                  <a href="descargar.php?id=<?= (int)$adj['id'] ?>">
-                    Descargar: <?= e($adj['nombre_original']) ?>
-                  </a>
-                  <small class="leyenda">(<?= round((int)$adj['tamano'] / 1024, 1) ?> KB)</small>
-                </li>
-              <?php endforeach; ?>
-            </ul>
-          </div>
-        <?php endif; ?>
-      </article>
-    <?php endforeach; ?>
-  </div>
+  <?php ase_pintar_hilo($mensajes, 'descargar.php'); ?>
 
   <!-- Formulario para enviar seguimiento (o reabrir automáticamente al responder) -->
+  <?php if (!$esPersonal || $conversacion['estado'] !== 'cerrada'): ?>
   <div class="panel">
     <h3><?= $conversacion['estado'] === 'cerrada' ? 'Enviar un nuevo mensaje y reabrir la consulta' : 'Agregar respuesta o seguimiento' ?></h3>
 
     <?php if ($errores): ?>
       <div class="alerta alerta--error" role="alert">
-        <p><span class="alerta__titulo">No se pudo enviar el mensaje.</span> Corrige los campos señalados.</p>
+        <p><?= e($errores['envio'] ?? 'No se pudo enviar el mensaje. Corrige los campos señalados.') ?></p>
       </div>
     <?php endif; ?>
 
@@ -192,7 +177,7 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
         <label class="campo__etiqueta" for="cuerpo">
           Tu mensaje <span class="campo__requerido" aria-hidden="true">*</span>
         </label>
-        <textarea class="campo__control" id="cuerpo" name="cuerpo" rows="4" required
+        <textarea class="campo__control" id="cuerpo" name="cuerpo" rows="4" maxlength="<?= ASE_MAX_CUERPO ?>" required
                   placeholder="Escribe tu respuesta o información adicional..."><?= e($cuerpoRespuesta) ?></textarea>
         <?php if (isset($errores['cuerpo'])): ?>
           <small class="campo__error"><?= e($errores['cuerpo']) ?></small>
@@ -215,6 +200,7 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
       </div>
     </form>
   </div>
+  <?php endif; ?>
 
 </section>
 

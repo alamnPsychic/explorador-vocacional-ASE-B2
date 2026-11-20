@@ -22,6 +22,18 @@ const ASE_ESTADOS = [
 const ASE_TIPOS_ADJUNTOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const ASE_MAX_MB_ADJUNTO = 5;
 
+/** Coordinación atiende todas las consultas; un editor, las generales y las de su carrera. */
+function ase_puede_atender_conversacion(?int $carreraId): bool
+{
+    if (rol() === 'coordinacion') {
+        return true;
+    }
+
+    $carreraEditor = carrera_del_usuario();
+    return rol() === 'editor' && $carreraEditor !== null
+        && ($carreraId === null || $carreraId === $carreraEditor);
+}
+
 /**
  * Clase de insignia del sistema de diseño (ev-base.css) para cada estado.
  */
@@ -40,6 +52,17 @@ function ase_clase_estado(string $estado): string
 function ase_ruta_uploads(): string
 {
     return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads';
+}
+
+/** Descarta un archivo nuevo si la operación que iba a registrarlo falla. */
+function ase_descartar_adjunto(?array $archivo): void
+{
+    if ($archivo !== null) {
+        $ruta = ase_ruta_uploads() . DIRECTORY_SEPARATOR . $archivo['nombre_servidor'];
+        if (is_file($ruta) && !@unlink($ruta)) {
+            error_log('ASE: no se pudo descartar un adjunto sin registrar.');
+        }
+    }
 }
 
 /**
@@ -63,9 +86,10 @@ function ase_procesar_adjunto_subido(?array $archivo): ?array
     $rutaCompleta = ase_ruta_uploads() . DIRECTORY_SEPARATOR . $nombreServidor;
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime  = (string)$finfo->file($rutaCompleta);
+    $nombreOriginal = basename(str_replace('\\', '/', $archivo['name']));
 
     return [
-        'nombre_original' => basename((string)($archivo['name'] ?? $nombreServidor)),
+        'nombre_original' => mb_substr(mb_scrub($nombreOriginal, 'UTF-8'), 0, 255, 'UTF-8'),
         'nombre_servidor' => $nombreServidor,
         'mime'            => $mime,
         'tamano'          => (int)($archivo['size'] ?? filesize($rutaCompleta)),
@@ -139,21 +163,17 @@ function ase_categoria_actualizar(int $id, array $datos): void
  */
 function ase_categoria_eliminar(int $id): bool
 {
-    $con = bd()->prepare('SELECT COUNT(*) FROM ase_faq WHERE categoria_id = ?');
-    $con->execute([$id]);
-    if ((int)$con->fetchColumn() > 0) {
-        return false;
+    try {
+        $con = bd()->prepare('DELETE FROM ase_categorias WHERE id = ?');
+        $con->execute([$id]);
+        return $con->rowCount() === 1;
+    } catch (PDOException $e) {
+        // Las llaves foráneas RESTRICT protegen las referencias concurrentes.
+        if ((int)($e->errorInfo[1] ?? 0) === 1451) {
+            return false;
+        }
+        throw $e;
     }
-
-    $con = bd()->prepare('SELECT COUNT(*) FROM ase_conversaciones WHERE categoria_id = ?');
-    $con->execute([$id]);
-    if ((int)$con->fetchColumn() > 0) {
-        return false;
-    }
-
-    $con = bd()->prepare('DELETE FROM ase_categorias WHERE id = ?');
-    $con->execute([$id]);
-    return true;
 }
 
 /* =========================================================================
@@ -264,10 +284,11 @@ function ase_faq_actualizar(int $id, array $datos): void
 }
 
 /** Elimina una pregunta frecuente. */
-function ase_faq_eliminar(int $id): void
+function ase_faq_eliminar(int $id): bool
 {
     $con = bd()->prepare('DELETE FROM ase_faq WHERE id = ?');
     $con->execute([$id]);
+    return $con->rowCount() === 1;
 }
 
 /**
@@ -280,6 +301,16 @@ function ase_publicar_mensaje_como_faq(int $mensajeId, array $datosFaq, int $usu
     $pdo->beginTransaction();
 
     try {
+        $con = $pdo->prepare('SELECT es_orientador, publicado_faq_id FROM ase_mensajes WHERE id = ? FOR UPDATE');
+        $con->execute([$mensajeId]);
+        $origen = $con->fetch();
+        if (!$origen || (int)$origen['es_orientador'] !== 1) {
+            throw new DomainException('El mensaje de origen no es una respuesta de orientación.');
+        }
+        if ($origen['publicado_faq_id'] !== null) {
+            throw new DomainException('Esta respuesta ya está vinculada a una pregunta frecuente.');
+        }
+
         $faqId = ase_faq_crear($datosFaq, $usuarioId);
 
         $con = $pdo->prepare('UPDATE ase_mensajes SET publicado_faq_id = ? WHERE id = ?');
@@ -306,7 +337,8 @@ function ase_conversaciones_listar(
     ?int $categoriaId = null,
     ?int $carreraId = null,
     ?int $aspiranteId = null,
-    int $pagina = 1
+    int $pagina = 1,
+    bool $incluirGenerales = false
 ): array {
     $condiciones = [];
     $valores     = [];
@@ -330,7 +362,7 @@ function ase_conversaciones_listar(
     }
 
     if ($carreraId !== null && $carreraId > 0) {
-        $condiciones[] = 'cv.carrera_id = ?';
+        $condiciones[] = $incluirGenerales ? '(cv.carrera_id = ? OR cv.carrera_id IS NULL)' : 'cv.carrera_id = ?';
         $valores[]     = $carreraId;
     }
 
@@ -350,9 +382,9 @@ function ase_conversaciones_listar(
     $con->execute($valores);
     $total = (int)$con->fetchColumn();
 
-    $pagina = max(1, $pagina);
+    $paginas = (int)ceil($total / ASE_POR_PAGINA);
+    $pagina = max(1, min($pagina, $paginas));
     $desde  = ($pagina - 1) * ASE_POR_PAGINA;
-    $limite = ASE_POR_PAGINA;
 
     $sql = "SELECT cv.*,
                    u.nombre   AS aspirante_nombre,
@@ -368,17 +400,22 @@ function ase_conversaciones_listar(
          LEFT JOIN carreras car       ON car.id = cv.carrera_id
          LEFT JOIN usuarios ori       ON ori.id = cv.orientador_id
               $donde
-          ORDER BY FIELD(cv.estado, 'abierta', 'respondida', 'cerrada'), cv.actualizado_en DESC
-             LIMIT $limite OFFSET $desde";
+          ORDER BY FIELD(cv.estado, 'abierta', 'respondida', 'cerrada'), cv.actualizado_en DESC, cv.id DESC
+             LIMIT ? OFFSET ?";
 
     $con = bd()->prepare($sql);
-    $con->execute($valores);
+    foreach ($valores as $indice => $valor) {
+        $con->bindValue($indice + 1, $valor, is_int($valor) ? PDO::PARAM_INT : PDO::PARAM_STR);
+    }
+    $con->bindValue(count($valores) + 1, ASE_POR_PAGINA, PDO::PARAM_INT);
+    $con->bindValue(count($valores) + 2, $desde, PDO::PARAM_INT);
+    $con->execute();
 
     return [
         'filas'   => $con->fetchAll(),
         'total'   => $total,
         'pagina'  => $pagina,
-        'paginas' => (int)ceil($total / ASE_POR_PAGINA),
+        'paginas' => $paginas,
     ];
 }
 
@@ -463,9 +500,9 @@ function ase_mensaje_obtener(int $mensajeId): ?array
 function ase_conversacion_crear(array $datos, int $aspiranteId, ?array $archivoGuardado = null): int
 {
     $pdo = bd();
-    $pdo->beginTransaction();
 
     try {
+        $pdo->beginTransaction();
         $con = $pdo->prepare(
             "INSERT INTO ase_conversaciones (aspirante_id, categoria_id, carrera_id, asunto, estado)
              VALUES (?, ?, ?, ?, 'abierta')"
@@ -496,7 +533,10 @@ function ase_conversacion_crear(array $datos, int $aspiranteId, ?array $archivoG
         $pdo->commit();
         return $conversacionId;
     } catch (Throwable $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        ase_descartar_adjunto($archivoGuardado);
         throw $e;
     }
 }
@@ -514,9 +554,19 @@ function ase_mensaje_agregar(
     ?array $archivoGuardado = null
 ): int {
     $pdo = bd();
-    $pdo->beginTransaction();
 
     try {
+        $pdo->beginTransaction();
+        $con = $pdo->prepare('SELECT estado FROM ase_conversaciones WHERE id = ? FOR UPDATE');
+        $con->execute([$conversacionId]);
+        $estado = $con->fetchColumn();
+        if ($estado === false) {
+            throw new DomainException('La conversación ya no está disponible.');
+        }
+        if ($esOrientador && $estado === 'cerrada') {
+            throw new DomainException('Reabre la consulta antes de enviar una respuesta.');
+        }
+
         $conMsj = $pdo->prepare(
             'INSERT INTO ase_mensajes (conversacion_id, usuario_id, cuerpo, es_orientador)
              VALUES (?, ?, ?, ?)'
@@ -552,26 +602,33 @@ function ase_mensaje_agregar(
         $pdo->commit();
         return $mensajeId;
     } catch (Throwable $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        ase_descartar_adjunto($archivoGuardado);
         throw $e;
     }
 }
 
 /**
- * Cambia explícitamente el estado de una conversación ('abierta', 'respondida', 'cerrada').
+ * Cierra una consulta respondida o reabre una cerrada. El estado 'respondida'
+ * solo se alcanza al registrar una respuesta de orientación.
  */
-function ase_conversacion_cambiar_estado(int $conversacionId, string $nuevoEstado): void
+function ase_conversacion_cambiar_estado(int $conversacionId, string $nuevoEstado): bool
 {
-    if (!array_key_exists($nuevoEstado, ASE_ESTADOS)) {
-        throw new InvalidArgumentException('Estado de conversación no válido.');
-    }
+    $estadoAnterior = match ($nuevoEstado) {
+        'abierta' => 'cerrada',
+        'cerrada' => 'respondida',
+        default => throw new InvalidArgumentException('Estado de conversación no válido.'),
+    };
 
     $con = bd()->prepare(
         'UPDATE ase_conversaciones
             SET estado = ?, actualizado_en = CURRENT_TIMESTAMP
-          WHERE id = ?'
+          WHERE id = ? AND estado = ?'
     );
-    $con->execute([$nuevoEstado, $conversacionId]);
+    $con->execute([$nuevoEstado, $conversacionId, $estadoAnterior]);
+    return $con->rowCount() === 1;
 }
 
 /** Registra los metadatos de un archivo adjunto en la base de datos. */

@@ -6,14 +6,39 @@
    ========================================================================= */
 
 .ase-mensaje--orientador {
-    border-left: 4px solid var(--color-primario, #0f4c81);
+    border-left: 4px solid var(--marca-500);
 }
 
 .ase-mensaje--aspirante {
-    border-left: 4px solid var(--color-borde, #cbd5e1);
+    border-left: 4px solid var(--borde-fuerte);
+}
+
+.ase-admin,
+.ase-hilo,
+.ase-publica {
+    overflow-wrap: anywhere;
 }
 
 .ase-adjuntos ul {
     margin: 0.25rem 0 0 1.25rem;
     padding: 0;
+}
+
+.ase-filtros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    align-items: end;
+    gap: var(--e3);
+}
+
+.ase-filtros > * {
+    min-width: 0;
+}
+
+.ase-filtros .boton {
+    justify-self: start;
+}
+
+.ase-tarjetas {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
 }

@@ -13,8 +13,9 @@ require_once __DIR__ . '/../../nucleo/comun.php';
 requerir_sesion();
 
 require_once __DIR__ . '/includes/consultas.php';
+require_once __DIR__ . '/includes/entrada.php';
 
-$id = entero(get('id'));
+$id = entero(ase_entrada($_GET, 'id'));
 if ($id === null) {
     no_encontrado('Archivo no especificado.');
 }
@@ -24,31 +25,14 @@ if ($adjunto === null) {
     no_encontrado('El archivo adjunto no existe.');
 }
 
-$usuarioActual = usuario();
-$rolActual     = rol();
-
-// Permisos:
-// 1. Coordinación puede descargar cualquier adjunto.
-// 2. Editor puede descargar si la conversación es de su carrera o general (NULL).
-// 3. Aspirante solo puede descargar si él es el titular de la conversación.
-$tienePermiso = false;
-
-if ($rolActual === 'coordinacion') {
-    $tienePermiso = true;
-} elseif ($rolActual === 'editor') {
-    $carreraConv  = $adjunto['carrera_id'] !== null ? (int)$adjunto['carrera_id'] : null;
-    $tienePermiso = ($carreraConv === null || $carreraConv === carrera_del_usuario());
-} elseif ((int)$adjunto['aspirante_id'] === (int)$usuarioActual['id']) {
-    $tienePermiso = true;
-}
-
-if (!$tienePermiso) {
+$carreraId = $adjunto['carrera_id'] === null ? null : (int)$adjunto['carrera_id'];
+$esTitular = rol() === 'aspirante' && (int)$adjunto['aspirante_id'] === (int)usuario()['id'];
+if (!$esTitular && !ase_puede_atender_conversacion($carreraId)) {
     http_response_code(403);
     exit('No tienes permiso para descargar este archivo adjunto.');
 }
 
 $rutaArchivo = ase_ruta_uploads() . DIRECTORY_SEPARATOR . $adjunto['nombre_servidor'];
-entregar_archivo($rutaArchivo, $adjunto['nombre_original']);
-
-
-  
+$nombreVisible = preg_replace('/[\x00-\x1f\x7f"]/', '', $adjunto['nombre_original']);
+header('Cache-Control: private, no-store');
+entregar_archivo($rutaArchivo, $nombreVisible ?: 'adjunto');

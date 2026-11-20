@@ -13,13 +13,15 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../nucleo/comun.php';
 require_once __DIR__ . '/includes/consultas.php';
+require_once __DIR__ . '/includes/entrada.php';
 
 iniciar_sesion();
 
 // --- Filtros de FAQ (GET) --------------------------------------------------
-$busqueda    = get('q');
-$categoriaId = entero(get('categoria'));
-$carreraId   = entero(get('carrera'));
+$busqueda    = ase_entrada($_GET, 'q');
+$busqueda    = ase_texto_valido($busqueda, 255) ? $busqueda : '';
+$categoriaId = entero(ase_entrada($_GET, 'categoria'));
+$carreraId   = entero(ase_entrada($_GET, 'carrera'));
 
 // --- Formulario de Nueva Consulta (POST) -----------------------------------
 $datosConsulta = [
@@ -30,46 +32,52 @@ $datosConsulta = [
 ];
 $errores = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    requerir_sesion();
-    verificar_token();
+    requerir_rol('aspirante');
+    ase_verificar_token();
 
-    $datosConsulta['categoria_id'] = entero(post('categoria_id'));
-    $datosConsulta['carrera_id']   = entero(post('carrera_id'));
-    $datosConsulta['asunto']       = trim(post('asunto'));
-    $datosConsulta['cuerpo']       = trim(post('cuerpo'));
+    $carreraEntrada = ase_entrada($_POST, 'carrera_id');
+    $datosConsulta['categoria_id'] = entero(ase_entrada($_POST, 'categoria_id'));
+    $datosConsulta['carrera_id']   = entero($carreraEntrada);
+    $datosConsulta['asunto']       = ase_entrada($_POST, 'asunto');
+    $datosConsulta['cuerpo']       = ase_entrada($_POST, 'cuerpo');
 
     // Validación en el servidor
-    if ($datosConsulta['categoria_id'] === null || ase_categoria_obtener($datosConsulta['categoria_id']) === null) {
+    $categoria = $datosConsulta['categoria_id'] !== null ? ase_categoria_obtener($datosConsulta['categoria_id']) : null;
+    if (!(bool)($categoria['activa'] ?? false)) {
         $errores['categoria_id'] = 'Selecciona una categoría válida.';
     }
 
-    if ($datosConsulta['carrera_id'] !== null && carrera($datosConsulta['carrera_id']) === null) {
+    if ((isset($_POST['carrera_id']) && !is_string($_POST['carrera_id']))
+        || ($carreraEntrada !== '' && ($datosConsulta['carrera_id'] === null || carrera($datosConsulta['carrera_id']) === null))) {
         $errores['carrera_id'] = 'La carrera seleccionada no es válida.';
     }
 
-    if ($datosConsulta['asunto'] === '') {
-        $errores['asunto'] = 'Escribe el asunto de tu consulta.';
-    } elseif (mb_strlen($datosConsulta['asunto']) > 200) {
-        $errores['asunto'] = 'El asunto no puede exceder los 200 caracteres.';
+    if (!ase_texto_valido($datosConsulta['asunto'], 200)) {
+        $errores['asunto'] = 'Escribe un asunto de hasta 200 caracteres.';
     }
 
-    if ($datosConsulta['cuerpo'] === '') {
-        $errores['cuerpo'] = 'Describe tu duda en el mensaje.';
+    if (!ase_texto_valido($datosConsulta['cuerpo'], ASE_MAX_CUERPO)) {
+        $errores['cuerpo'] = 'Describe tu duda en un mensaje de hasta 16 000 caracteres.';
     }
 
     $archivoGuardado = null;
-    if (!$errores && !empty($_FILES['adjunto']['name'])) {
+    if (!$errores) {
         try {
-            $archivoGuardado = ase_procesar_adjunto_subido($_FILES['adjunto']);
+            $archivoGuardado = ase_procesar_adjunto_subido($_FILES['adjunto'] ?? null);
         } catch (RuntimeException $e) {
             $errores['adjunto'] = $e->getMessage();
         }
     }
 
     if (!$errores) {
-        $nuevaId = ase_conversacion_crear($datosConsulta, (int)usuario()['id'], $archivoGuardado);
-        mensaje('exito', 'Tu consulta fue enviada. Un orientador te responderá pronto.');
-        redirigir('conversacion.php?id=' . $nuevaId);
+        try {
+            $nuevaId = ase_conversacion_crear($datosConsulta, (int)usuario()['id'], $archivoGuardado);
+            mensaje('exito', 'Tu consulta fue enviada. Un orientador te responderá pronto.');
+            redirigir('conversacion.php?id=' . $nuevaId);
+        } catch (PDOException $e) {
+            error_log('ASE: error al crear una consulta: ' . $e->getMessage());
+            $errores['envio'] = 'No se pudo guardar tu consulta. Intenta de nuevo.';
+        }
     }
 }
 
@@ -78,7 +86,7 @@ $faqs       = ase_faq_listar($busqueda, $categoriaId, $carreraId, true);
 
 // Si hay sesión iniciada, cargamos las conversaciones propias del usuario
 $misConversaciones = [];
-if (hay_sesion()) {
+if (rol() === 'aspirante') {
     $listadoPropio     = ase_conversaciones_listar('', '', null, null, (int)usuario()['id'], 1);
     $misConversaciones = $listadoPropio['filas'];
 }
@@ -96,7 +104,7 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
   </div>
 </section>
 
-<section class="contenedor seccion">
+<section class="contenedor seccion ase-publica">
 
   <?php pintar_mensajes(); ?>
 
@@ -114,7 +122,9 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
        ===================================================================== -->
   <div class="fila fila--separada mb-4">
     <h2 class="sin-margen">Preguntas frecuentes (FAQ)</h2>
-    <a class="boton boton--primario" href="#nueva-consulta">Hacer una consulta personal</a>
+    <?php if (!hay_sesion() || rol() === 'aspirante'): ?>
+      <a class="boton boton--primario" href="#nueva-consulta">Hacer una consulta personal</a>
+    <?php endif; ?>
   </div>
 
   <div class="disposicion-filtros">
@@ -191,6 +201,7 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
 
   </div>
 
+  <?php if (!hay_sesion() || rol() === 'aspirante'): ?>
   <hr class="mt-6 mb-6">
   <!-- =====================================================================
        2. SEGUIMIENTO DE MIS CONVERSACIONES
@@ -267,8 +278,7 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
 
       <?php if ($errores): ?>
         <div class="alerta alerta--error" role="alert">
-          <p><span class="alerta__titulo">Revisa tu consulta.</span>
-             Hay <?= count($errores) ?> campo<?= count($errores) === 1 ? '' : 's' ?> por corregir.</p>
+          <p><?= e($errores['envio'] ?? 'Revisa los campos señalados en tu consulta.') ?></p>
         </div>
       <?php endif; ?>
 
@@ -326,7 +336,7 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
             <label class="campo__etiqueta" for="cuerpo">
               Mensaje detallado <span class="campo__requerido" aria-hidden="true">*</span>
             </label>
-            <textarea class="campo__control" id="cuerpo" name="cuerpo" rows="5" required
+            <textarea class="campo__control" id="cuerpo" name="cuerpo" rows="5" maxlength="<?= ASE_MAX_CUERPO ?>" required
                       placeholder="Explica tu duda con detalle para que el orientador pueda ayudarte..."><?= e($datosConsulta['cuerpo']) ?></textarea>
             <?php if (isset($errores['cuerpo'])): ?>
               <small class="campo__error"><?= e($errores['cuerpo']) ?></small>
@@ -348,6 +358,7 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
       </form>
     <?php endif; ?>
   </div>
+  <?php endif; ?>
 
 </section>
 
