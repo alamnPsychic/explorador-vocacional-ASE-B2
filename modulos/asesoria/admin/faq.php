@@ -73,11 +73,12 @@ cabecera('Preguntas frecuentes · Asesoría', 'salud', '../css/modulo.css');
   <?php ase_admin_navegacion('faq'); ?>
   <?php pintar_mensajes(); ?>
 
-  <form class="panel mb-6" method="GET" action="faq.php" aria-label="Filtrar preguntas frecuentes">
+ <form class="panel ase-panel-filtro mb-6" method="GET" action="faq.php" aria-label="Filtrar preguntas frecuentes">
     <div class="ase-filtros">
       <div class="campo sin-margen">
-        <label class="campo__etiqueta" for="q">Buscar en preguntas y respuestas</label>
-        <input class="campo__control" type="search" id="q" name="q" value="<?= e($busqueda) ?>" maxlength="255">
+        <label class="campo__etiqueta" for="q">Buscar</label>
+        <input class="campo__control" type="search" id="q" name="q"
+               placeholder="Pregunta o respuesta" value="<?= e($busqueda) ?>" maxlength="255">
       </div>
       <div class="campo sin-margen">
         <label class="campo__etiqueta" for="categoria">Categoría</label>
@@ -98,15 +99,15 @@ cabecera('Preguntas frecuentes · Asesoría', 'salud', '../css/modulo.css');
           <option value="0" <?= $visibilidad === '0' ? 'selected' : '' ?>>Ocultas al público</option>
         </select>
       </div>
-    </div>
-    <div class="fila mt-4">
-      <button class="boton boton--secundario" type="submit">Filtrar</button>
-      <?php if ($busqueda !== '' || $categoriaId !== null || $visibilidad !== ''): ?>
-        <a class="boton boton--fantasma" href="faq.php">Limpiar filtros</a>
-      <?php endif; ?>
+      <div class="ase-filtros__acciones">
+        <button class="boton boton--primario boton--pequeno" type="submit">Filtrar</button>
+        <?php if ($busqueda !== '' || $categoriaId !== null || $visibilidad !== ''): ?>
+          <a class="boton boton--fantasma boton--pequeno" href="faq.php">Limpiar</a>
+        <?php endif; ?>
+      </div>
     </div>
   </form>
-
+  
   <?php if (!$preguntas): ?>
     <div class="vacio">
       <h2>No hay preguntas frecuentes</h2>
