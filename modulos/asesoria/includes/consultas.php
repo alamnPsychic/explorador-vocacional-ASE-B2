@@ -231,18 +231,76 @@ if ($carreraId !== null && $carreraId > 0) {
     return $con->fetchAll();
 }
 
-/** Obtiene una FAQ por su ID. */
-function ase_faq_obtener(int $id): ?array
-{
-    $con = bd()->prepare(
-        'SELECT f.*, cat.nombre AS categoria_nombre, car.nombre AS carrera_nombre
+/**
+ * Lista paginada de preguntas frecuentes para la vista pública del visitante.
+ */
+function ase_faq_paginar(
+    string $busqueda = '',
+    ?int $categoriaId = null,
+    ?int $carreraId = null,
+    int $pagina = 1,
+    int $porPagina = ASE_POR_PAGINA
+): array {
+    $condiciones = ['f.visible = 1', 'cat.activa = 1'];
+    $valores     = [];
+
+    if ($busqueda !== '') {
+        $condiciones[] = '(f.pregunta LIKE ? OR f.respuesta LIKE ?)';
+        $comodin       = '%' . $busqueda . '%';
+        $valores[]     = $comodin;
+        $valores[]     = $comodin;
+    }
+
+    if ($categoriaId !== null && $categoriaId > 0) {
+        $condiciones[] = 'f.categoria_id = ?';
+        $valores[]     = $categoriaId;
+    }
+
+    if ($carreraId !== null && $carreraId > 0) {
+        $condiciones[] = 'f.carrera_id = ?';
+        $valores[]     = $carreraId;
+    }
+
+    $donde = 'WHERE ' . implode(' AND ', $condiciones);
+
+    $conTotal = bd()->prepare(
+        "SELECT COUNT(*)
            FROM ase_faq f
            JOIN ase_categorias cat ON cat.id = f.categoria_id
-      LEFT JOIN carreras car       ON car.id = f.carrera_id
-          WHERE f.id = ?'
+          $donde"
     );
-    $con->execute([$id]);
-    return $con->fetch() ?: null;
+    $conTotal->execute($valores);
+    $total = (int)$conTotal->fetchColumn();
+
+    $paginas = max(1, (int)ceil($total / $porPagina));
+    $pagina  = max(1, min($pagina, $paginas));
+    $desde   = ($pagina - 1) * $porPagina;
+
+    $sql = "SELECT f.*,
+                   cat.nombre AS categoria_nombre,
+                   car.nombre AS carrera_nombre,
+                   car.clave  AS carrera_clave
+              FROM ase_faq f
+              JOIN ase_categorias cat ON cat.id = f.categoria_id
+         LEFT JOIN carreras car       ON car.id = f.carrera_id
+              $donde
+          ORDER BY cat.orden ASC, f.orden ASC, f.id DESC
+             LIMIT ? OFFSET ?";
+
+    $con = bd()->prepare($sql);
+    foreach ($valores as $indice => $valor) {
+        $con->bindValue($indice + 1, $valor, is_int($valor) ? PDO::PARAM_INT : PDO::PARAM_STR);
+    }
+    $con->bindValue(count($valores) + 1, $porPagina, PDO::PARAM_INT);
+    $con->bindValue(count($valores) + 2, $desde, PDO::PARAM_INT);
+    $con->execute();
+
+    return [
+        'filas'   => $con->fetchAll(),
+        'total'   => $total,
+        'pagina'  => $pagina,
+        'paginas' => $paginas,
+    ];
 }
 
 /** Crea una nueva pregunta frecuente. */
