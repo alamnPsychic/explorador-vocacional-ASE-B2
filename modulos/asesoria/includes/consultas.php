@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-const ASE_POR_PAGINA = 10;
+const ASE_POR_PAGINA = 6;
 
 const ASE_ESTADOS = [
     'abierta'    => 'Abierta',
@@ -209,8 +209,8 @@ function ase_faq_listar(
         $valores[]     = $categoriaId;
     }
 
-    if ($carreraId !== null && $carreraId > 0) {
-        $condiciones[] = '(f.carrera_id = ? OR f.carrera_id IS NULL)';
+if ($carreraId !== null && $carreraId > 0) {
+        $condiciones[] = 'f.carrera_id = ?';
         $valores[]     = $carreraId;
     }
 
@@ -337,7 +337,8 @@ function ase_conversaciones_listar(
     ?int $categoriaId = null,
     ?int $carreraId = null,
     ?int $aspiranteId = null,
-    int $pagina = 1,
+   $paginas = max(1, (int)ceil($total / ASE_POR_PAGINA));
+    $pagina  = max(1, min($pagina, $paginas));
     bool $incluirGenerales = false
 ): array {
     $condiciones = [];
