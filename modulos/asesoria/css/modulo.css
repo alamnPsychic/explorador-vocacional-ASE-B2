@@ -42,3 +42,71 @@
 .ase-tarjetas {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
 }
+
+/* ============================================================================
+   MÓDULO ASE · Estilos propios complementarios a ev-base.css
+   Explorador Vocacional UTBB
+
+   Respeta el ancho móvil de 375 px sin generar desplazamiento horizontal.
+   ========================================================================= */
+
+.ase-mensaje--orientador {
+    border-left: 4px solid var(--marca-500);
+}
+
+.ase-mensaje--aspirante {
+    border-left: 4px solid var(--borde-fuerte);
+}
+
+.ase-admin,
+.ase-hilo,
+.ase-publica {
+    overflow-wrap: anywhere;
+}
+
+.ase-adjuntos ul {
+    margin: 0.25rem 0 0 1.25rem;
+    padding: 0;
+}
+
+.ase-panel-filtro {
+    padding: var(--e3) var(--e4);
+}
+
+.ase-filtros {
+    display: grid;
+    grid-template-columns: minmax(190px, 2fr) repeat(2, minmax(140px, 1fr)) auto;
+    align-items: end;
+    gap: var(--e3);
+}
+
+.ase-filtros > * {
+    min-width: 0;
+}
+
+.ase-filtros .campo__etiqueta {
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+}
+
+.ase-filtros .campo__control {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+}
+
+.ase-filtros__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e2);
+    align-items: center;
+}
+
+@media (max-width: 760px) {
+    .ase-filtros {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ase-tarjetas {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
+}
