@@ -2,11 +2,6 @@
 /**
  * MÓDULO ASE · Asesoría a aspirantes (Equipo B-2) · Pantalla pública principal
  * Explorador Vocacional UTBB
- *
- * Incluye:
- *  1. Preguntas frecuentes (FAQ) por categoría y carrera con buscador.
- *  2. Formulario para enviar una nueva consulta (con adjunto opcional).
- *  3. Listado de conversaciones propias del aspirante en sesión.
  */
 
 declare(strict_types=1);
@@ -17,11 +12,12 @@ require_once __DIR__ . '/includes/entrada.php';
 
 iniciar_sesion();
 
-// --- Filtros de FAQ (GET) --------------------------------------------------
+// --- Filtros y paginación de FAQ (GET) -------------------------------------
 $busqueda    = ase_entrada($_GET, 'q');
 $busqueda    = ase_texto_valido($busqueda, 255) ? $busqueda : '';
 $categoriaId = entero(ase_entrada($_GET, 'categoria'));
 $carreraId   = entero(ase_entrada($_GET, 'carrera'));
+$pagina      = max(1, entero(ase_entrada($_GET, 'pagina')) ?? 1);
 
 // --- Formulario de Nueva Consulta (POST) -----------------------------------
 $datosConsulta = [
@@ -41,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datosConsulta['asunto']       = ase_entrada($_POST, 'asunto');
     $datosConsulta['cuerpo']       = ase_entrada($_POST, 'cuerpo');
 
-    // Validación en el servidor
     $categoria = $datosConsulta['categoria_id'] !== null ? ase_categoria_obtener($datosConsulta['categoria_id']) : null;
     if (!(bool)($categoria['activa'] ?? false)) {
         $errores['categoria_id'] = 'Selecciona una categoría válida.';
@@ -81,15 +76,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$categorias = ase_categorias_listar(true);
-$faqs       = ase_faq_listar($busqueda, $categoriaId, $carreraId, true);
+$categorias   = ase_categorias_listar(true);
+$resultadoFaq = ase_faq_paginar($busqueda, $categoriaId, $carreraId, $pagina);
+$faqs         = $resultadoFaq['filas'];
 
-// Si hay sesión iniciada, cargamos las conversaciones propias del usuario
-$misConversaciones = [];
+$totalMisConsultas = 0;
 if (rol() === 'aspirante') {
-    $listadoPropio     = ase_conversaciones_listar('', '', null, null, (int)usuario()['id'], 1);
-    $misConversaciones = $listadoPropio['filas'];
+    $conteoPropio      = ase_conversaciones_listar('', '', null, null, (int)usuario()['id'], 1);
+    $totalMisConsultas = $conteoPropio['total'];
 }
+
+$filtrosFaq = array_filter([
+    'q'         => $busqueda,
+    'categoria' => $categoriaId,
+    'carrera'   => $carreraId,
+], static fn($v): bool => $v !== '' && $v !== null);
 
 cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
 ?>
@@ -118,19 +119,24 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
   <?php endif; ?>
 
   <!-- =====================================================================
-       1. PREGUNTAS FRECUENTES CON BUSCADOR Y FILTROS
+       1. PREGUNTAS FRECUENTES CON BUSCADOR, FILTROS AND Y PAGINACIÓN
        ===================================================================== -->
   <div class="fila fila--separada mb-4">
     <h2 class="sin-margen">Preguntas frecuentes (FAQ)</h2>
     <?php if (!hay_sesion() || rol() === 'aspirante'): ?>
-      <a class="boton boton--primario" href="#nueva-consulta">Hacer una consulta personal</a>
+      <div class="fila">
+        <a class="boton boton--secundario" href="mis-consultas.php">
+          Mis conversaciones<?= rol() === 'aspirante' ? ' (' . (int)$totalMisConsultas . ')' : '' ?>
+        </a>
+        <a class="boton boton--primario" href="#nueva-consulta">Hacer una consulta personal</a>
+      </div>
     <?php endif; ?>
   </div>
 
   <div class="disposicion-filtros">
 
     <!-- Panel lateral de filtros -->
-    <form class="panel" method="GET" action="">
+    <form class="panel" method="GET" action="index.php">
       <h3>Filtrar dudas</h3>
 
       <div class="campo">
@@ -164,22 +170,22 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
       </div>
 
       <button class="boton boton--primario boton--bloque" type="submit">Buscar</button>
-      <?php if ($busqueda !== '' || $categoriaId !== null || $carreraId !== null): ?>
-        <p class="centrado mt-4 sin-margen"><a href="?">Ver todas las preguntas</a></p>
+      <?php if ($filtrosFaq): ?>
+        <p class="centrado mt-4 sin-margen"><a href="index.php">Ver todas las preguntas</a></p>
       <?php endif; ?>
     </form>
 
-    <!-- Listado de preguntas frecuentes -->
+    <!-- Listado paginado de preguntas frecuentes -->
     <div>
       <p class="leyenda">
-        <?= count($faqs) ?> pregunta<?= count($faqs) === 1 ? '' : 's' ?> frecuente<?= count($faqs) === 1 ? '' : 's' ?>
+        <?= (int)$resultadoFaq['total'] ?> pregunta<?= $resultadoFaq['total'] === 1 ? '' : 's' ?> frecuente<?= $resultadoFaq['total'] === 1 ? '' : 's' ?>
       </p>
 
       <?php if (!$faqs): ?>
         <div class="vacio">
           <h3>No encontramos preguntas frecuentes con esos filtros</h3>
           <p class="ancho-lectura">Prueba con otros términos o envíanos directamente tu pregunta en el formulario inferior.</p>
-          <a class="boton boton--secundario" href="?">Quitar filtros</a>
+          <a class="boton boton--secundario" href="index.php">Quitar filtros</a>
         </div>
       <?php else: ?>
         <div class="ase-lista-faq">
@@ -196,6 +202,33 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
             </article>
           <?php endforeach; ?>
         </div>
+
+        <?php if ($resultadoFaq['paginas'] > 1): ?>
+          <?php $baseFaq = http_build_query($filtrosFaq); ?>
+          <nav class="mt-4" aria-label="Paginación de preguntas frecuentes">
+            <ul class="paginacion">
+              <?php if ($resultadoFaq['pagina'] > 1): ?>
+                <li>
+                  <a href="index.php?<?= e($baseFaq ? $baseFaq . '&' : '') ?>pagina=<?= (int)($resultadoFaq['pagina'] - 1) ?>">Anterior</a>
+                </li>
+              <?php endif; ?>
+              <?php for ($p = 1; $p <= $resultadoFaq['paginas']; $p++): ?>
+                <li>
+                  <?php if ($p === $resultadoFaq['pagina']): ?>
+                    <span aria-current="page"><?= $p ?></span>
+                  <?php else: ?>
+                    <a href="index.php?<?= e($baseFaq ? $baseFaq . '&' : '') ?>pagina=<?= $p ?>"><?= $p ?></a>
+                  <?php endif; ?>
+                </li>
+              <?php endfor; ?>
+              <?php if ($resultadoFaq['pagina'] < $resultadoFaq['paginas']): ?>
+                <li>
+                  <a href="index.php?<?= e($baseFaq ? $baseFaq . '&' : '') ?>pagina=<?= (int)($resultadoFaq['pagina'] + 1) ?>">Siguiente</a>
+                </li>
+              <?php endif; ?>
+            </ul>
+          </nav>
+        <?php endif; ?>
       <?php endif; ?>
     </div>
 
@@ -203,66 +236,9 @@ cabecera('Asesoría a aspirantes', '', 'css/modulo.css');
 
   <?php if (!hay_sesion() || rol() === 'aspirante'): ?>
   <hr class="mt-6 mb-6">
-  <!-- =====================================================================
-       2. SEGUIMIENTO DE MIS CONVERSACIONES
-       ===================================================================== -->
-  <h2 id="mis-consultas">Mis conversaciones de asesoría</h2>
-
-  <?php if (!hay_sesion()): ?>
-    <div class="panel mb-6">
-      <p class="sin-margen">
-        Para dar seguimiento a tus consultas o enviar una duda personalizada a un orientador,
-        <a href="<?= RUTA_BASE ?>/auth/entrar.php"><strong>inicia sesión con tu cuenta de aspirante</strong></a>.
-      </p>
-    </div>
-  <?php else: ?>
-    <?php if (!$misConversaciones): ?>
-      <div class="vacio mb-6">
-        <h3>Aún no tienes conversaciones registradas</h3>
-        <p class="ancho-lectura">Usa el formulario de abajo para enviar tu primera consulta al equipo de orientación.</p>
-      </div>
-    <?php else: ?>
-      <div class="tabla-envoltura mb-6">
-        <table class="tabla">
-          <caption>Historial de tus consultas</caption>
-          <thead>
-            <tr>
-              <th scope="col">Asunto</th>
-              <th scope="col">Categoría</th>
-              <th scope="col">Carrera</th>
-              <th scope="col">Estado</th>
-              <th scope="col">Última actividad</th>
-              <th scope="col">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($misConversaciones as $cv): ?>
-              <tr>
-                <td><strong><?= e($cv['asunto']) ?></strong></td>
-                <td><?= e($cv['categoria_nombre']) ?></td>
-                <td><?= e($cv['carrera_nombre'] ?? 'General') ?></td>
-                <td>
-                  <span class="<?= e(ase_clase_estado($cv['estado'])) ?>">
-                    <?= e(ASE_ESTADOS[$cv['estado']]) ?>
-                  </span>
-                </td>
-                <td><?= e(date('d/m/Y H:i', strtotime($cv['actualizado_en']))) ?></td>
-                <td>
-                  <a class="boton boton--secundario boton--pequeno"
-                     href="conversacion.php?id=<?= (int)$cv['id'] ?>">
-                    Ver seguimiento (<?= (int)$cv['total_mensajes'] ?>)
-                  </a>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    <?php endif; ?>
-  <?php endif; ?>
 
   <!-- =====================================================================
-       3. FORMULARIO DE NUEVA CONSULTA
+       2. FORMULARIO DE NUEVA CONSULTA
        ===================================================================== -->
   <div id="nueva-consulta" class="mt-6">
     <h2>Nueva consulta a orientación</h2>
