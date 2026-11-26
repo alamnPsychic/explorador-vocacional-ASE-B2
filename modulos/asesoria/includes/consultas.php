@@ -395,8 +395,7 @@ function ase_conversaciones_listar(
     ?int $categoriaId = null,
     ?int $carreraId = null,
     ?int $aspiranteId = null,
-   $paginas = max(1, (int)ceil($total / ASE_POR_PAGINA));
-    $pagina  = max(1, min($pagina, $paginas));
+    int $pagina = 1,
     bool $incluirGenerales = false
 ): array {
     $condiciones = [];
