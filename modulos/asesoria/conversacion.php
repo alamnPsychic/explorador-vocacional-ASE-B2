@@ -110,8 +110,10 @@ cabecera('Conversación #' . $id . ' · Asesoría', '', 'css/modulo.css');
 
   <nav aria-label="Ruta">
     <ol class="migas">
-      <li><a href="index.php">Asesoría a aspirantes</a></li>
-      <li>Conversación #<?= (int)$conversacion['id'] ?></li>
+      <li><a href="<?= e(RUTA_BASE) ?>/panel.php">Panel</a></li>
+      <li><a href="index.php">Asesoría</a></li>
+      <li><a href="mis-consultas.php">Mis conversaciones</a></li>
+      <li aria-current="page">Consulta #<?= e((string)$id) ?></li>
     </ol>
   </nav>
 
