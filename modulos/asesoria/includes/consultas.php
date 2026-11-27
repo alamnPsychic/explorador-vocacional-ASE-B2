@@ -303,6 +303,20 @@ function ase_faq_paginar(
     ];
 }
 
+/** Obtiene una FAQ por su ID. */
+function ase_faq_obtener(int $id): ?array
+{
+    $con = bd()->prepare(
+        'SELECT f.*, cat.nombre AS categoria_nombre, car.nombre AS carrera_nombre
+           FROM ase_faq f
+           JOIN ase_categorias cat ON cat.id = f.categoria_id
+      LEFT JOIN carreras car       ON car.id = f.carrera_id
+          WHERE f.id = ?'
+    );
+    $con->execute([$id]);
+    return $con->fetch() ?: null;
+}
+
 /** Crea una nueva pregunta frecuente. */
 function ase_faq_crear(array $datos, ?int $usuarioId): int
 {
